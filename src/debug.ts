@@ -11,7 +11,12 @@ import { join } from "node:path";
 
 const DEBUG_LOG = join(homedir(), ".pi-speak-debug.log");
 const MAX_LOG_BYTES = 2 * 1024 * 1024; // 2 MB — rotate if larger
-const enabled = process.env.PI_SPEAK_DEBUG !== "0";
+let _enabled = process.env.PI_SPEAK_DEBUG !== "0";
+
+/** Set debug logging enabled/disabled (e.g., from config.debug) */
+export function setDebugEnabled(enabled: boolean): void {
+  _enabled = enabled;
+}
 
 /** Rotate log if it exceeds MAX_LOG_BYTES */
 function maybeRotate(): void {
@@ -27,7 +32,7 @@ function maybeRotate(): void {
 }
 
 export function debug(msg: string): void {
-  if (!enabled) return;
+  if (!_enabled) return;
   maybeRotate();
   const ts = new Date().toISOString();
   try {
@@ -39,7 +44,7 @@ export function debug(msg: string): void {
 
 /** Log an error with full stack trace */
 export function debugError(msg: string, err: unknown): void {
-  if (!enabled) return;
+  if (!_enabled) return;
   const detail = err instanceof Error ? `${err.message}\n${err.stack ?? ""}` : String(err);
   debug(`${msg}: ${detail}`);
 }

@@ -14,7 +14,7 @@
 import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { initConfig, loadConfig } from "./config.js";
-import { debug, debugError } from "./debug.js";
+import { debug, debugError, setDebugEnabled } from "./debug.js";
 import { stripMarkdown } from "./helpers.js";
 import { createPlatform } from "./platform.js";
 import { summarizeForPing } from "./summarizer.js";
@@ -22,6 +22,7 @@ import { TTSPlayer } from "./tts.js";
 
 export default function (pi: ExtensionAPI) {
   const config = loadConfig();
+  setDebugEnabled(config.debug);
   const platform = createPlatform();
   const player = new TTSPlayer(platform, config);
 
