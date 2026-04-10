@@ -51,7 +51,8 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
             content: `Write a voice notification: what was done${where}. What: ${ctx.responseText.slice(0, 500)}`
           }
         ]
-      })
+      }),
+      signal: AbortSignal.timeout(5_000)
     });
 
     if (!response.ok) {
