@@ -24,8 +24,29 @@ function warnUnknownKeys(raw: Record<string, unknown>): void {
   }
 }
 
+/** Validation errors to report to user via pi notification */
+let pendingValidationErrors: { path: string; message: string; value: unknown }[] | null = null;
+
+/**
+ * Returns validation errors from the last loadConfig() call.
+ * Resets after being called.
+ */
+export function consumeValidationErrors(): { path: string; message: string; value: unknown }[] | null {
+  const errors = pendingValidationErrors;
+  pendingValidationErrors = null;
+  return errors;
+}
+
+/**
+ * Returns validation errors without consuming them (can be called multiple times).
+ */
+export function getValidationErrors(): { path: string; message: string; value: unknown }[] {
+  return pendingValidationErrors ?? [];
+}
+
 export function loadConfig(): SpeakConfig {
   let rawConfig: Record<string, unknown> = {};
+  let parseError = false;
 
   if (existsSync(CONFIG_PATH)) {
     try {
@@ -35,10 +56,15 @@ export function loadConfig(): SpeakConfig {
       const message = err instanceof Error ? err.message : String(err);
       debug(`loadConfig: failed to parse ${CONFIG_PATH}: ${message}`);
       debug(`loadConfig: using defaults due to parse error`);
-      return { ...DEFAULT_CONFIG };
+      parseError = true;
     }
   } else {
     debug(`loadConfig: no config file at ${CONFIG_PATH}, using defaults`);
+    return { ...DEFAULT_CONFIG };
+  }
+
+  if (parseError) {
+    pendingValidationErrors = [{ path: "config", message: "JSON parse error", value: undefined }];
     return { ...DEFAULT_CONFIG };
   }
 
@@ -57,6 +83,17 @@ export function loadConfig(): SpeakConfig {
   const result = SpeakConfigSchema.safeParse(rawConfig);
 
   if (!result.success) {
+    // Capture all validation errors with their values for user notification
+    pendingValidationErrors = result.error.issues.map(issue => ({
+      path: issue.path.join(".") || "root",
+      message: issue.message,
+      value:
+        issue.code === "invalid_type"
+          ? { expected: issue.expected, received: (issue as { received?: unknown }).received }
+          : issue.code === "too_big" || issue.code === "too_small"
+            ? rawConfig[issue.path.join(".") as keyof typeof rawConfig]
+            : rawConfig[issue.path[0] as string]
+    }));
     const errors = result.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ");
     debug(`loadConfig: validation failed — ${errors}`);
     debug(`loadConfig: using defaults due to validation errors`);
@@ -80,6 +117,44 @@ function saveConfig(config: SpeakConfig): void {
     const message = err instanceof Error ? err.message : String(err);
     debug(`saveConfig: failed to save ${CONFIG_PATH}: ${message}`);
   }
+}
+
+// ─── Revalidate ───────────────────────────────────────────────────────────────
+
+/**
+ * Re-reads and re-validates the config file, updating validation errors.
+ * Call this on user input to detect config fixes without reloading.
+ */
+export function revalidateConfig(): void {
+  if (!existsSync(CONFIG_PATH)) {
+    pendingValidationErrors = null;
+    return;
+  }
+
+  let rawConfig: Record<string, unknown> = {};
+  try {
+    rawConfig = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+  } catch {
+    pendingValidationErrors = [{ path: "config", message: "JSON parse error", value: undefined }];
+    return;
+  }
+
+  const result = SpeakConfigSchema.safeParse(rawConfig);
+  if (!result.success) {
+    pendingValidationErrors = result.error.issues.map(issue => ({
+      path: issue.path.join(".") || "root",
+      message: issue.message,
+      value:
+        issue.code === "invalid_type"
+          ? { expected: issue.expected, received: (issue as { received?: unknown }).received }
+          : issue.code === "too_big" || issue.code === "too_small"
+            ? rawConfig[issue.path.join(".") as keyof typeof rawConfig]
+            : rawConfig[issue.path[0] as keyof typeof rawConfig]
+    }));
+    return;
+  }
+
+  pendingValidationErrors = null;
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────

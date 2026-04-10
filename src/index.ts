@@ -13,7 +13,7 @@
 
 import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { initConfig, loadConfig } from "./config/index";
+import { getValidationErrors, initConfig, loadConfig, revalidateConfig } from "./config/index";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { stripMarkdown } from "./helpers";
 import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
@@ -72,6 +72,18 @@ export default function (pi: ExtensionAPI) {
     return "";
   }
 
+  /** Build widget content: validation errors first, then normal status */
+  function buildWidgetContent(normalLine: string): string[] {
+    const validationErrors = getValidationErrors();
+    if (validationErrors.length === 0) return [normalLine];
+    const errorLines = validationErrors.map(
+      err =>
+        `⚠️ ${err.path}: ${err.message}` +
+        (err.value !== undefined && typeof err.value !== "object" ? ` (got ${JSON.stringify(err.value)})` : "")
+    );
+    return [...errorLines, normalLine];
+  }
+
   // ── Session start ─────────────────────────────────────────────────────────
 
   pi.on("session_start", async (_event, ctx) => {
@@ -108,9 +120,6 @@ export default function (pi: ExtensionAPI) {
     // Create default config file if missing
     initConfig();
 
-    // Clear stale audio cache from previous sessions
-    player.clearCache();
-
     // Check for required API key (should be set in user's environment)
     // Check env var first, then fall back to config file
     const apiKey = process.env.UNREAL_SPEECH_API_KEY ?? config.api.unrealSpeechKey;
@@ -125,8 +134,18 @@ export default function (pi: ExtensionAPI) {
       return;
     }
 
+    // Clear stale audio cache from previous sessions
+    player.clearCache();
+
     debug("session_start: API key loaded, extension enabled");
-    ctx.ui.setWidget("speak", ["🔊 " + config.behavior.shortcut + " read aloud"]);
+    ctx.ui.setWidget("speak", buildWidgetContent("🔊 " + config.behavior.shortcut + " read aloud"));
+  });
+
+  // ── Input: revalidate config on user input ────────────────────────────────
+
+  pi.on("input", async () => {
+    // Re-read and re-validate config to detect fixes without reloading
+    revalidateConfig();
   });
 
   // ── Agent end ─────────────────────────────────────────────────────────────
@@ -144,7 +163,7 @@ export default function (pi: ExtensionAPI) {
 
     if (muted) {
       debug("agent_end: SKIPPED (system is muted)");
-      ctx.ui.setWidget("speak", ["🔇 Muted  " + config.behavior.shortcut + " replay"]);
+      ctx.ui.setWidget("speak", buildWidgetContent("🔇 Muted  " + config.behavior.shortcut + " replay"));
       return;
     }
 
@@ -161,7 +180,7 @@ export default function (pi: ExtensionAPI) {
       player.clearCache();
     }
     lastResponseText = text;
-    ctx.ui.setWidget("speak", ["🔊 Ready  " + config.behavior.shortcut + " replay"]);
+    ctx.ui.setWidget("speak", buildWidgetContent("🔊 Ready  " + config.behavior.shortcut + " replay"));
 
     // Skip ping if disabled
     if (!config.behavior.pingEnabled) {
@@ -204,7 +223,7 @@ export default function (pi: ExtensionAPI) {
       if (player.playing) {
         debug(`shortcut: STOP (was playing)`);
         player.stop();
-        ctx.ui.setWidget("speak", ["🔊 Ready  " + config.behavior.shortcut + " replay"]);
+        ctx.ui.setWidget("speak", buildWidgetContent("🔊 Ready  " + config.behavior.shortcut + " replay"));
         return;
       }
 
@@ -217,7 +236,7 @@ export default function (pi: ExtensionAPI) {
       // Check if we need to regenerate (was muted when response came)
       if (wasMutedOnLastResponse || player.cachedFiles.length === 0) {
         debug(`shortcut: regenerating audio (was muted or no cache)`);
-        ctx.ui.setWidget("speak", ["🔊 Generating...  " + config.behavior.shortcut + " stop"]);
+        ctx.ui.setWidget("speak", buildWidgetContent("🔊 Generating...  " + config.behavior.shortcut + " stop"));
         player.speak(lastResponseText, ctx.ui);
         return;
       }
