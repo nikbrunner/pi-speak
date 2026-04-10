@@ -62,7 +62,12 @@ async function fetchTTS(text: string, config: TTSConfig): Promise<Buffer> {
   return Buffer.from(arrayBuf);
 }
 
-/** Stateful TTS playback manager with caching and generation-based cancellation */
+/**
+ * Stateful TTS playback manager with caching and generation-based cancellation.
+ *
+ * Note: speak() is not re-entrant — callers should await speak() before calling again.
+ * Concurrent calls will cause race conditions on cachedAudioFiles.
+ */
 export class TTSPlayer {
   private cachedAudioFiles: string[] = [];
   private currentPlayback: ChildProcess | null = null;
