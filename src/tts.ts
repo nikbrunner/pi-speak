@@ -208,6 +208,16 @@ export class TTSPlayer {
         );
 
         this.updateWidget(ui);
+      } else {
+        // Aborted — clean up any files we fetched but didn't cache
+        for (const f of newFiles) {
+          try {
+            unlinkSync(f);
+          } catch {
+            /* ignore */
+          }
+        }
+        debug(`speak: gen=${myGeneration} aborted, cleaned up ${newFiles.length} orphaned files`);
       }
     }
   }
