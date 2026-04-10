@@ -220,6 +220,14 @@ export class TTSPlayer {
     this.isPlaying = false;
     if (this.currentPlayback) {
       this.currentPlayback.kill("SIGTERM");
+      // Fallback to SIGKILL if process doesn't stop within 500ms
+      const proc = this.currentPlayback;
+      setTimeout(() => {
+        if (!proc.killed) {
+          debug("stop: SIGTERM didn't work, sending SIGKILL");
+          proc.kill("SIGKILL");
+        }
+      }, 500);
       this.currentPlayback = null;
     }
   }
