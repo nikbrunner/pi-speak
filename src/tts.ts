@@ -11,8 +11,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { SpeakConfig } from "./config.js";
 import { debug } from "./debug.js";
-import type { UI } from "./index.js";
 import { chunkBySentences } from "./helpers.js";
+import type { UI } from "./index.js";
 import type { Platform } from "./platform.js";
 
 const TEMP_FILE_PREFIX = "pi-speak-";

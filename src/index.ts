@@ -32,7 +32,10 @@ export default function (pi: ExtensionAPI) {
   // Warn if platform is not supported
   if (!isPlatformSupported()) {
     debug(`platform "${process.platform}" is not supported — audio playback disabled`);
-    pi.ui.notify(`speak: platform "${process.platform}" is not supported. Only macOS is supported for audio playback.`, "warning");
+    pi.ui.notify(
+      `speak: platform "${process.platform}" is not supported. Only macOS is supported for audio playback.`,
+      "warning"
+    );
     pi.ui.setWidget("speak", ["🔊 Platform not supported"]);
   }
 
@@ -95,7 +98,10 @@ export default function (pi: ExtensionAPI) {
     if (!process.env.UNREAL_SPEECH_API_KEY) {
       disabled = true;
       debug("session_start: NO API KEY — extension disabled");
-      ctx.ui.notify("speak: UNREAL_SPEECH_API_KEY not set — voice readback disabled. Set it in your environment (e.g., source ~/.env)", "warning");
+      ctx.ui.notify(
+        "speak: UNREAL_SPEECH_API_KEY not set — voice readback disabled. Set it in your environment (e.g., source ~/.env)",
+        "warning"
+      );
       ctx.ui.setWidget("speak", undefined);
       return;
     }
