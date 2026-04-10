@@ -9,7 +9,7 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 const testLintScript = process.env.LINT_SCRIPT ?? "test:lint";
 const testCompileScript = process.env.COMPILE_SCRIPT ?? "test:compile";
-const formatScript = process.env.FORMAT_SCRIPT ?? "format";
+const formatScript = process.env.FORMAT_SCRIPT ?? "test:format";
 
 async function runCheck(pi: ExtensionAPI, script: string) {
   const result = await pi.exec("npm", ["run", script]);
