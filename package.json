@@ -1,0 +1,32 @@
+{
+  "name": "pi-speak",
+  "version": "0.1.0",
+  "description": "Voice readback extension for Pi — reads agent responses aloud via Unreal Speech TTS",
+  "private": true,
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "lint:check": "eslint src",
+    "format:check": "prettier --check src",
+    "format": "prettier --write src",
+    "lint": "eslint --fix src && prettier --write src"
+  },
+  "pi": {
+    "extensions": [
+      "src/index.ts"
+    ]
+  },
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
+    "eslint": "^10.2.0",
+    "globals": "^17.4.0",
+    "jiti": "^2.6.1",
+    "prettier": "^3.8.2"
+  }
+}
