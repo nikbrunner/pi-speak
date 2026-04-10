@@ -74,8 +74,13 @@ Environment variables override file config: `PI_SPEAK_VOICE`, `PI_SPEAK_BITRATE`
 Set `PI_SPEAK_DEBUG=0` to disable the debug log, or set `"debug": false` in config.
 Log file: `~/.pi-speak-debug.log`
 
+## Releases
+
+This project uses [release-please](https://github.com/googleapis/release-please) for automated versioning and changelog generation via [Conventional Commits](https://www.conventionalcommits.org/).
+
 ## TODO
 
+- [x] Add release-please
 - [ ] Verify config setup
 - [ ] Config Migration Support
 - [ ] Discard env var override support
