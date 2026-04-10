@@ -2,7 +2,7 @@
  * Default configuration values for pi-speak.
  */
 
-import type { SpeakConfig } from "./schema.js";
+import type { SpeakConfig } from "./schema";
 
 export const DEFAULT_CONFIG: SpeakConfig = {
   $schema: "https://raw.githubusercontent.com/nikbrunner/pi-speak/main/src/config/schema.json",

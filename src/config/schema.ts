@@ -5,7 +5,7 @@
  */
 
 import { z } from "zod";
-import { SCHEMA_URL } from "./constants.js";
+import { SCHEMA_URL } from "./constants";
 
 // ─── Sub-schemas ─────────────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ export const ApiConfigSchema = z.object({
 
 // ─── Main schema ─────────────────────────────────────────────────────────────
 
-export { SCHEMA_URL } from "./constants.js";
+export { SCHEMA_URL } from "./constants";
 
 export const SpeakConfigSchema = z.object({
   $schema: z.string().url().default(SCHEMA_URL),

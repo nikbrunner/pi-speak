@@ -9,11 +9,11 @@ import { type ChildProcess } from "node:child_process";
 import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { SpeakConfig } from "./config/index.js";
-import { debug } from "./debug.js";
-import { chunkBySentences } from "./helpers.js";
-import type { UI } from "./index.js";
-import type { Platform } from "./platform.js";
+import type { SpeakConfig } from "./config/index";
+import { debug } from "./debug";
+import { chunkBySentences } from "./helpers";
+import type { UI } from "./index";
+import type { Platform } from "./platform";
 
 const TEMP_FILE_PREFIX = "pi-speak-";
 

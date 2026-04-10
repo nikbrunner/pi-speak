@@ -5,8 +5,8 @@
  * a 2-sentence "what was done, where" summary for the voice ping.
  */
 
-import type { SpeakConfig } from "./config/index.js";
-import { debug, debugError } from "./debug.js";
+import type { SpeakConfig } from "./config/index";
+import { debug, debugError } from "./debug";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MAX_TOKENS = 60;

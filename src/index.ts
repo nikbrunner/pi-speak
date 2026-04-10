@@ -13,12 +13,12 @@
 
 import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { initConfig, loadConfig } from "./config/index.js";
-import { configureDebug, debug, debugError, setDebugEnabled } from "./debug.js";
-import { stripMarkdown } from "./helpers.js";
-import { createPlatform, isPlatformSupported } from "./platform.js";
-import { summarizeForPing } from "./summarizer.js";
-import { TTSPlayer } from "./tts.js";
+import { initConfig, loadConfig } from "./config/index";
+import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
+import { stripMarkdown } from "./helpers";
+import { createPlatform, isPlatformSupported } from "./platform";
+import { summarizeForPing } from "./summarizer";
+import { TTSPlayer } from "./tts";
 
 export interface UI {
   setWidget(key: string, content: string[] | undefined): void;

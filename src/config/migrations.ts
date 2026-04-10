@@ -4,9 +4,9 @@
  * Handles upgrades from older config versions to the current schema.
  */
 
-import { SCHEMA_URL } from "./constants.js";
-import { DEFAULT_CONFIG } from "./defaults.js";
-import type { SpeakConfig } from "./schema.js";
+import { SCHEMA_URL } from "./constants";
+import { DEFAULT_CONFIG } from "./defaults";
+import type { SpeakConfig } from "./schema";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

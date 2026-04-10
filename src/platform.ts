@@ -6,7 +6,7 @@
  */
 
 import { spawn, type ChildProcess } from "node:child_process";
-import { debug, debugError } from "./debug.js";
+import { debug, debugError } from "./debug";
 
 export interface Platform {
   /** Play an MP3 file. Resolves when playback finishes. */

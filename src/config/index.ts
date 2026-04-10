@@ -6,11 +6,11 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { debug } from "../debug.js";
-import { CONFIG_PATH, SCHEMA_URL } from "./constants.js";
-import { DEFAULT_CONFIG } from "./defaults.js";
-import { CURRENT_VERSION, migrate } from "./migrations.js";
-import { SpeakConfigSchema, type SpeakConfig } from "./schema.js";
+import { debug } from "../debug";
+import { CONFIG_PATH, SCHEMA_URL } from "./constants";
+import { DEFAULT_CONFIG } from "./defaults";
+import { CURRENT_VERSION, migrate } from "./migrations";
+import { SpeakConfigSchema, type SpeakConfig } from "./schema";
 
 // ─── Load ───────────────────────────────────────────────────────────────────
 
@@ -140,5 +140,5 @@ function generateDefaultConfigContent(): string {
 }
 
 // Re-export types and schema for external use
-export type { SpeakConfig } from "./schema.js";
-export { SpeakConfigSchema, SCHEMA_URL } from "./schema.js";
+export type { SpeakConfig } from "./schema";
+export { SpeakConfigSchema, SCHEMA_URL } from "./schema";
