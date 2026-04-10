@@ -13,7 +13,7 @@ Read more about Pi Packages and Extensions here:
 
 ## Linting
 
-- `.pi/extensions/lint.ts` auto-runs ESLint + Prettier after every write/edit
+- `.pi/extensions/checks.ts` auto-runs ESLint + Prettier after every write/edit
 - Errors are injected into the conversation automatically
 - No manual lint step needed — trust the hook
 
