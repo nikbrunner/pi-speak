@@ -1,2 +1,8 @@
 /node_modules
 /plans
+
+# npm package
+*.tgz
+
+# Coverage
+/coverage

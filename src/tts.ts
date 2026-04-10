@@ -108,8 +108,9 @@ export class TTSPlayer {
     for (const f of this.cachedAudioFiles) {
       try {
         unlinkSync(f);
-      } catch {
-        // ignore — file may already be gone
+        debug(`clearCache: deleted ${f}`);
+      } catch (err: unknown) {
+        debug(`clearCache: failed to delete ${f}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
     this.cachedAudioFiles = [];

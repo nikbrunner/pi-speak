@@ -1,5 +1,10 @@
 # pi-speak
 
+[![npm version](https://img.shields.io/npm/v/@nbr/pi-speak.svg)](https://www.npmjs.com/package/@nbr/pi-speak)
+[![Test Status](https://github.com/nikbrunner/pi-speak/actions/workflows/ci.yml/badge.svg)](https://github.com/nikbrunner/pi-speak/actions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Voice readback extension for [Pi](https://github.com/mariozechner/pi-coding-agent).
 
 ## Features
@@ -14,13 +19,10 @@ Voice readback extension for [Pi](https://github.com/mariozechner/pi-coding-agen
 
 ## Installation
 
-> [!NOTE]
-> Not published on npm yet
-
 1. Install the extension:
 
 ```bash
-pi install git:github.com/nikbrunner/pi-speak
+pi install npm:@nbr/pi-speak
 ```
 
 2. Add your API key to your environment by sourcing `~/.env` in your shell:
@@ -72,18 +74,101 @@ See the default config [here](./src/config/schema.json).
 Set `PI_SPEAK_DEBUG=0` to disable the debug log, or set `"debug": false` in config.
 Log file: `~/.pi-speak-debug.log`
 
+## Development
+
+### Prerequisites
+
+- Node.js 20+
+- npm
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/nikbrunner/pi-speak.git
+cd pi-speak
+
+# Install dependencies
+npm install
+```
+
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run all quality checks
+npm run test:all
+```
+
+### Quality Assurance
+
+```bash
+# Lint
+npm run test:lint
+
+# Format check
+npm run test:format
+
+# Type check
+npm run test:compile
+
+# Config validation
+npm run test:config
+
+# Fix lint and format issues
+npm run lint
+npm run format
+```
+
+### Project Structure
+
+```
+src/
+├── index.ts           # Main extension entry point
+├── tts.ts             # TTS playback and caching
+├── summarizer.ts      # LLM-powered ping summarization
+├── platform.ts        # Platform abstraction (macOS)
+├── debug.ts           # Debug logging
+├── helpers.ts         # Text processing utilities
+└── config/
+    ├── index.ts       # Config loading and initialization
+    ├── schema.ts      # Zod schemas
+    ├── defaults.ts    # Default values
+    ├── migrations.ts  # Version migrations
+    ├── constants.ts   # Constants
+    └── schema.json    # JSON Schema for IDE autocomplete
+```
+
 ## Releases
 
 This project uses [release-please](https://github.com/googleapis/release-please) for automated versioning and changelog generation via [Conventional Commits](https://www.conventionalcommits.org/).
 
-## TODO
+## Troubleshooting
 
-- [x] Add release-please
-- [x] Config location follows XDG spec (`~/.config/pi-speak/config.json`) — no standard convention exists for pi-package extension config
-- [x] Config Migration Support
-- [x] Remove ~/.env file loading (use process.env directly)
-- [x] If muted, don't generate TTS to save costs.
-  - don't play the summarizer, and show notification for the readback inside the TUI that its muted
-- [ ] Publish on npm
-- [ ] Linux support
-- [ ] Windows support
+### Voice readback not working
+
+1. Ensure `UNREAL_SPEECH_API_KEY` is set in your environment
+2. Check if system audio is not muted
+3. Look at `~/.pi-speak-debug.log` for error messages
+
+### Extension not loading
+
+1. Verify the extension is installed: `pi install npm:@nbr/pi-speak`
+2. Check Pi logs for extension errors
+3. Ensure you're on macOS (Linux/Windows audio not yet supported)
+
+### Config issues
+
+The config file is at `~/.config/pi-speak/config.json`. Delete it to reset to defaults.
+
+## License
+
+MIT

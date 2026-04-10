@@ -2,15 +2,34 @@
   "name": "@nbr/pi-speak",
   "version": "0.1.0",
   "description": "Voice readback extension for Pi — reads agent responses aloud via Unreal Speech TTS",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package",
+    "tts",
+    "text-to-speech",
+    "voice",
+    "accessibility"
+  ],
+  "license": "MIT",
+  "author": "Nikolaus Brunner <nik@nbr.haus>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nikbrunner/pi-speak"
+  },
+  "bugs": {
+    "url": "https://github.com/nikbrunner/pi-speak/issues"
+  },
   "private": false,
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:lint": "eslint src",
     "test:format": "prettier --check src",
     "test:compile": "tsc --noEmit --skipLibCheck",
     "test:config": "node scripts/test-config.mjs",
+    "test:all": "npm run test && npm run test:lint && npm run test:format && npm run test:compile && npm run test:config",
     "format": "prettier --write src",
     "lint": "eslint --fix src && prettier --write src"
   },
@@ -26,11 +45,16 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
+    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/ui": "^4.1.4",
     "eslint": "^10.2.0",
     "globals": "^17.4.0",
+    "happy-dom": "^20.8.9",
     "jiti": "^2.6.1",
-    "prettier": "^3.8.2"
+    "prettier": "^3.8.2",
+    "vitest": "^4.1.4"
   }
 }

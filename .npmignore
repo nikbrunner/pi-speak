@@ -1,0 +1,29 @@
+# Development files
+*.test.ts
+vitest.config.ts
+
+# CI/CD
+.github/
+.github workflows/
+
+# Scripts
+scripts/
+
+# Config
+tsconfig.json
+eslint.config.ts
+prettier.config.ts
+
+# Plans
+plans/
+
+# Node
+node_modules/
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
