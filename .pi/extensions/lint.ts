@@ -7,7 +7,8 @@
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
-const lintScript = process.env.LINT_SCRIPT ?? "lint:check";
+const testLintScript = process.env.LINT_SCRIPT ?? "test:lint";
+const testCompileScript = process.env.COMPILE_SCRIPT ?? "test:compile";
 const formatScript = process.env.FORMAT_SCRIPT ?? "format";
 
 async function runCheck(pi: ExtensionAPI, script: string) {
@@ -45,7 +46,11 @@ export default function lintExtension(pi: ExtensionAPI) {
   pi.on("tool_execution_end", async (event, ctx) => {
     if (!["write", "edit"].includes(event.toolName)) return;
 
-    const results = await Promise.all([runCheck(pi, lintScript), runCheck(pi, formatScript)]);
+    const results = await Promise.all([
+      runCheck(pi, testLintScript),
+      runCheck(pi, formatScript),
+      runCheck(pi, testCompileScript)
+    ]);
 
     const failed = results.filter(r => !r.passed);
     if (failed.length === 0) return;
