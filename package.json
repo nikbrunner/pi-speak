@@ -38,8 +38,10 @@
       "src/index.ts"
     ]
   },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*"
+  },
   "dependencies": {
-    "@mariozechner/pi-coding-agent": "*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
