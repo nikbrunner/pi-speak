@@ -28,10 +28,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get Node version from package.json
+        id: node-version
+        run: echo "version=$(cat package.json | jq -r '.engines.node' | sed 's/>=//')" >> $GITHUB_OUTPUT
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ steps.node-version.outputs.version }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
