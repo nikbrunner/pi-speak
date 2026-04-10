@@ -26,8 +26,8 @@ function maybeRotate(): void {
     if (stat.size >= MAX_LOG_BYTES) {
       truncateSync(DEBUG_LOG, 0);
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    console.warn(`[pi-speak] debug: failed to rotate log: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
@@ -37,8 +37,10 @@ export function debug(msg: string): void {
   const ts = new Date().toISOString();
   try {
     appendFileSync(DEBUG_LOG, `[${ts}] ${msg}\n`);
-  } catch {
-    // ignore — logging is best-effort
+  } catch (err) {
+    // Fallback to console when file logging fails
+    console.log(`[pi-speak] ${msg}`);
+    console.warn(`[pi-speak] debug: failed to write to log file: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
