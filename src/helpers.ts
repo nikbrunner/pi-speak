@@ -11,31 +11,6 @@ export function shellQuote(s: string): string {
   return `'${s.replace(/'/g, "'\\''")}'`;
 }
 
-/** Load a key from ~/.env (simple KEY=VALUE parser, no dependency) */
-export function loadEnvKey(key: string): string | undefined {
-  const envPath = join(homedir(), ".env");
-  if (!existsSync(envPath)) return undefined;
-  try {
-    const contents = readFileSync(envPath, "utf-8");
-    for (const line of contents.split("\n")) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("#") || trimmed.length === 0) continue;
-      const eqIdx = trimmed.indexOf("=");
-      if (eqIdx === -1) continue;
-      const k = trimmed.slice(0, eqIdx).trim();
-      let v = trimmed.slice(eqIdx + 1).trim();
-      // Strip surrounding quotes
-      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-        v = v.slice(1, -1);
-      }
-      if (k === key) return v;
-    }
-  } catch {
-    // ignore
-  }
-  return undefined;
-}
-
 /** Strip markdown formatting for cleaner speech */
 export function stripMarkdown(text: string): string {
   return (

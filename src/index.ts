@@ -7,7 +7,7 @@
  *   3. Shows a status widget below the editor
  *
  * Settings: see ~/.config/pi-speak/config.json
- * API key: read from ~/.env (UNREAL_SPEECH_API_KEY) or process.env
+ * API key: set UNREAL_SPEECH_API_KEY in your environment (source ~/.env in your shell)
  * Optional: OPENROUTER_API_KEY for smarter voice ping summaries
  */
 
@@ -15,7 +15,7 @@ import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { initConfig, loadConfig } from "./config.js";
 import { debug, debugError } from "./debug.js";
-import { loadEnvKey, stripMarkdown } from "./helpers.js";
+import { stripMarkdown } from "./helpers.js";
 import { createPlatform } from "./platform.js";
 import { summarizeForPing } from "./summarizer.js";
 import { TTSPlayer } from "./tts.js";
@@ -77,20 +77,11 @@ export default function (pi: ExtensionAPI) {
     // Clear stale audio cache from previous sessions
     player.clearCache();
 
-    // Load API keys from ~/.env (fallback to process.env)
-    if (!process.env.UNREAL_SPEECH_API_KEY) {
-      const fromEnv = loadEnvKey("UNREAL_SPEECH_API_KEY");
-      if (fromEnv) process.env.UNREAL_SPEECH_API_KEY = fromEnv;
-    }
-    if (!process.env.OPENROUTER_API_KEY) {
-      const fromEnv = loadEnvKey("OPENROUTER_API_KEY");
-      if (fromEnv) process.env.OPENROUTER_API_KEY = fromEnv;
-    }
-
+    // Check for required API key (should be set in user's environment)
     if (!process.env.UNREAL_SPEECH_API_KEY) {
       disabled = true;
       debug("session_start: NO API KEY — extension disabled");
-      ctx.ui.notify("speak: UNREAL_SPEECH_API_KEY not set — voice readback disabled. Add it to ~/.env", "warning");
+      ctx.ui.notify("speak: UNREAL_SPEECH_API_KEY not set — voice readback disabled. Set it in your environment (e.g., source ~/.env)", "warning");
       ctx.ui.setWidget("speak", undefined);
       return;
     }
