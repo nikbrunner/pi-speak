@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "pi-speak Configuration",
+  "description": "Configuration schema for pi-speak voice readback extension",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "default": "https://raw.githubusercontent.com/nikbrunner/pi-speak/main/src/config/schema.json"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 1
+    },
+    "tts": {
+      "type": "object",
+      "description": "Text-to-Speech settings. See https://docs.v8.unrealspeech.com/",
+      "properties": {
+        "voiceId": {
+          "type": "string",
+          "default": "Sierra",
+          "examples": ["Sierra", "Scarlett", "William", "Beta"]
+        },
+        "bitrate": {
+          "type": "string",
+          "default": "192k",
+          "examples": ["96k", "128k", "192k", "256k"]
+        },
+        "speed": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "default": 0,
+          "description": "Speech speed adjustment"
+        },
+        "pitch": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.5,
+          "default": 1.0,
+          "description": "Speech pitch adjustment"
+        },
+        "maxChunkChars": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 900,
+          "description": "Max characters per TTS chunk (Unreal Speech limit is 1000)"
+        }
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "properties": {
+        "shortcut": {
+          "type": "string",
+          "default": "alt+r",
+          "description": "Keyboard shortcut for replay/stop"
+        },
+        "pingEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Speak a ping notification on agent_end"
+        },
+        "pingOnStartEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Speak a welcome message on session_start"
+        },
+        "fallbackPingText": {
+          "type": "string",
+          "default": "Work finished.",
+          "description": "Fallback text when summarizer is disabled"
+        }
+      }
+    },
+    "summarizer": {
+      "type": "object",
+      "description": "LLM summarizer settings. See https://openrouter.ai/models",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use LLM for ping summaries (vs fallback only)"
+        },
+        "model": {
+          "type": "string",
+          "default": "openai/gpt-oss-20b",
+          "description": "OpenRouter model for summarizer"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 60
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000,
+          "default": 5000
+        }
+      }
+    },
+    "debug": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "logPath": {
+          "type": "string",
+          "default": "~/.pi-speak-debug.log"
+        },
+        "logMaxBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 10485760,
+          "default": 2097152
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "description": "API keys (optional - env vars take precedence)",
+      "properties": {
+        "unrealSpeechKey": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "openRouterKey": {
+          "type": ["string", "null"],
+          "default": null
+        }
+      }
+    }
+  }
+}

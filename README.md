@@ -65,8 +65,6 @@ On first run, a default config is created at `~/.config/pi-speak/config.json`:
 | `debug`           | boolean | `true`                 | Write to `~/.pi-speak-debug.log`            |
 | `summarizerModel` | string  | `"openai/gpt-oss-20b"` | OpenRouter model for voice ping summaries   |
 
-
-
 ## Usage
 
 - **Notification**: When the agent finishes, a notification appears with the session name and summary. Navigate to the session yourself, then press `alt+r` to hear the response.
@@ -85,8 +83,10 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 - [x] Add release-please
 - [x] Config location follows XDG spec (`~/.config/pi-speak/config.json`) — no standard convention exists for pi-package extension config
-- [ ] Config Migration Support
+- [x] Config Migration Support
 - [x] Remove ~/.env file loading (use process.env directly)
+- [ ] If muted, don't generate TTS to save costs.
+  - don't play the summarizer, and show notification for the readback inside the TUI that its muted
 - [ ] Publish on npm
 - [ ] Linux support
 - [ ] Windows support

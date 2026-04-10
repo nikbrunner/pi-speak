@@ -9,7 +9,7 @@ import { type ChildProcess } from "node:child_process";
 import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { SpeakConfig } from "./config.js";
+import type { SpeakConfig } from "./config/index.js";
 import { debug } from "./debug.js";
 import { chunkBySentences } from "./helpers.js";
 import type { UI } from "./index.js";
@@ -31,6 +31,9 @@ const DEFAULT_TTS_CONFIG: TTSConfig = {
   speed: 0,
   pitch: 1.0
 };
+
+/** Default max chunk size */
+const DEFAULT_MAX_CHUNK_CHARS = 900;
 
 /** Fetch MP3 audio from Unreal Speech /stream endpoint */
 async function fetchTTS(text: string, config: TTSConfig): Promise<Buffer> {
@@ -79,16 +82,16 @@ export class TTSPlayer {
 
   constructor(
     private platform: Platform,
-    config?: Partial<SpeakConfig>
+    config?: SpeakConfig
   ) {
     this.config = {
-      voiceId: config?.voiceId ?? DEFAULT_TTS_CONFIG.voiceId,
-      bitrate: config?.bitrate ?? DEFAULT_TTS_CONFIG.bitrate,
-      speed: config?.speed ?? DEFAULT_TTS_CONFIG.speed,
-      pitch: config?.pitch ?? DEFAULT_TTS_CONFIG.pitch
+      voiceId: config?.tts.voiceId ?? DEFAULT_TTS_CONFIG.voiceId,
+      bitrate: config?.tts.bitrate ?? DEFAULT_TTS_CONFIG.bitrate,
+      speed: config?.tts.speed ?? DEFAULT_TTS_CONFIG.speed,
+      pitch: config?.tts.pitch ?? DEFAULT_TTS_CONFIG.pitch
     };
-    this.maxChunkChars = config?.maxChunkChars ?? 900;
-    this.shortcutLabel = config?.shortcut ?? "alt+r";
+    this.maxChunkChars = config?.tts.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS;
+    this.shortcutLabel = config?.behavior.shortcut ?? "alt+r";
   }
 
   get playing(): boolean {

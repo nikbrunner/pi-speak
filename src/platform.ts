@@ -36,6 +36,7 @@ export function createPlatform(): Platform {
 
 function createMacOSPlatform(): Platform {
   return {
+    supported: true,
     async playAudio(filePath, onProcess) {
       debug(`playAudio: ${filePath}`);
       return new Promise<void>((resolve, reject) => {

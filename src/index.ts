@@ -13,8 +13,8 @@
 
 import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { initConfig, loadConfig } from "./config.js";
-import { debug, debugError, setDebugEnabled } from "./debug.js";
+import { initConfig, loadConfig } from "./config/index.js";
+import { configureDebug, debug, debugError, setDebugEnabled } from "./debug.js";
 import { stripMarkdown } from "./helpers.js";
 import { createPlatform, isPlatformSupported } from "./platform.js";
 import { summarizeForPing } from "./summarizer.js";
@@ -27,17 +27,11 @@ export interface UI {
 
 export default function (pi: ExtensionAPI) {
   const config = loadConfig();
-  setDebugEnabled(config.debug);
+  setDebugEnabled(config.debug.enabled);
+  configureDebug(config.debug);
 
-  // Warn if platform is not supported
-  if (!isPlatformSupported()) {
-    debug(`platform "${process.platform}" is not supported — audio playback disabled`);
-    pi.ui.notify(
-      `speak: platform "${process.platform}" is not supported. Only macOS is supported for audio playback.`,
-      "warning"
-    );
-    pi.ui.setWidget("speak", ["🔊 Platform not supported"]);
-  }
+  // Warn if platform is not supported (defer until session_start to have access to ctx.ui)
+  const platformNotSupported = !isPlatformSupported();
 
   const platform = createPlatform();
   const player = new TTSPlayer(platform, config);
@@ -51,16 +45,22 @@ export default function (pi: ExtensionAPI) {
   // ── Extract assistant text ────────────────────────────────────────────────
 
   function extractAssistantText(
-    messages: { role?: string; content?: Array<{ type: string; text?: string }> }[]
+    messages: Array<{ role?: string; content?: string | Array<{ type: string; text?: string }> }>
   ): string {
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
       if (msg?.role !== "assistant") continue;
 
       const textParts: string[] = [];
-      for (const block of msg.content ?? []) {
-        if (block.type === "text" && typeof block.text === "string") {
-          textParts.push(block.text);
+      const content = msg.content;
+
+      if (typeof content === "string") {
+        textParts.push(content);
+      } else if (Array.isArray(content)) {
+        for (const block of content) {
+          if (block.type === "text" && typeof block.text === "string") {
+            textParts.push(block.text);
+          }
         }
       }
 
@@ -75,6 +75,16 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("session_start", async (_event, ctx) => {
     debug("=== session_start ===");
+
+    // Warn if platform is not supported
+    if (platformNotSupported) {
+      debug(`platform "${process.platform}" is not supported — audio playback disabled`);
+      ctx.ui.notify(
+        `speak: platform "${process.platform}" is not supported. Only macOS is supported for audio playback.`,
+        "warning"
+      );
+      ctx.ui.setWidget("speak", ["🔊 Platform not supported"]);
+    }
 
     // Capture session name for voice ping
     if (process.env.TMUX_PANE) {
@@ -95,7 +105,9 @@ export default function (pi: ExtensionAPI) {
     player.clearCache();
 
     // Check for required API key (should be set in user's environment)
-    if (!process.env.UNREAL_SPEECH_API_KEY) {
+    // Check env var first, then fall back to config file
+    const apiKey = process.env.UNREAL_SPEECH_API_KEY ?? config.api.unrealSpeechKey;
+    if (!apiKey) {
       disabled = true;
       debug("session_start: NO API KEY — extension disabled");
       ctx.ui.notify(
@@ -107,7 +119,7 @@ export default function (pi: ExtensionAPI) {
     }
 
     debug("session_start: API key loaded, extension enabled");
-    ctx.ui.setWidget("speak", ["🔊 " + config.shortcut + " read aloud"]);
+    ctx.ui.setWidget("speak", ["🔊 " + config.behavior.shortcut + " read aloud"]);
   });
 
   // ── Agent end ─────────────────────────────────────────────────────────────
@@ -132,13 +144,21 @@ export default function (pi: ExtensionAPI) {
       player.clearCache();
     }
     lastResponseText = text;
-    ctx.ui.setWidget("speak", ["🔊 Ready  " + config.shortcut + " replay"]);
+    ctx.ui.setWidget("speak", ["🔊 Ready  " + config.behavior.shortcut + " replay"]);
+
+    // Skip ping if disabled
+    if (!config.behavior.pingEnabled) {
+      debug("agent_end: ping disabled — skipping");
+      return;
+    }
 
     // Generate short voice ping summary (LLM if OpenRouter key, else fallback)
     const ping = await summarizeForPing({
       responseText: text,
       sessionName: sessionName || undefined,
-      model: config.summarizerModel
+      config: config.summarizer,
+      apiKey: config.api.openRouterKey ?? undefined,
+      fallbackPingText: config.behavior.fallbackPingText
     });
     debug(`agent_end: voice ping = "${ping}"`);
 
@@ -148,10 +168,11 @@ export default function (pi: ExtensionAPI) {
 
   // ── Shortcut: alt+r — replay / stop ───────────────────────────────────────
 
-  pi.registerShortcut(config.shortcut, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pi.registerShortcut(config.behavior.shortcut as any, {
     description: "Replay last response aloud / stop current playback",
     handler: ctx => {
-      debug(`=== shortcut: ${config.shortcut} pressed ===`);
+      debug(`=== shortcut: ${config.behavior.shortcut} pressed ===`);
       if (disabled) {
         debug(`shortcut: SKIPPED (disabled)`);
         return;
@@ -160,7 +181,7 @@ export default function (pi: ExtensionAPI) {
       if (player.playing) {
         debug(`shortcut: STOP (was playing)`);
         player.stop();
-        ctx.ui.setWidget("speak", ["🔊 Ready  " + config.shortcut + " replay"]);
+        ctx.ui.setWidget("speak", ["🔊 Ready  " + config.behavior.shortcut + " replay"]);
         return;
       }
 
