@@ -46,9 +46,12 @@ export function loadConfig(): SpeakConfig {
 
   const fileVersion = (rawConfig.version as number | undefined) ?? 0;
 
+  // Migrate if needed and save back to file
   if (fileVersion < CURRENT_VERSION) {
     debug(`loadConfig: migrating from v${fileVersion} to v${CURRENT_VERSION}`);
-    return migrate(rawConfig, fileVersion);
+    const migratedConfig = migrate(rawConfig, fileVersion);
+    saveConfig(migratedConfig);
+    return migratedConfig;
   }
 
   const result = SpeakConfigSchema.safeParse(rawConfig);
@@ -66,6 +69,17 @@ export function loadConfig(): SpeakConfig {
   );
 
   return result.data;
+}
+
+/** Save config to file */
+function saveConfig(config: SpeakConfig): void {
+  try {
+    writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n");
+    debug(`saveConfig: saved migrated config to ${CONFIG_PATH}`);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    debug(`saveConfig: failed to save ${CONFIG_PATH}: ${message}`);
+  }
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────

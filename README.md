@@ -37,33 +37,63 @@ UNREAL_SPEECH_API_KEY=your-key-here pi
 
 ## Configuration
 
-<!-- TODO: Is this the documented default dir? -->
-
 On first run, a default config is created at `~/.config/pi-speak/config.json`:
 
 ```json
 {
-  "voiceId": "Sierra",
-  "bitrate": "192k",
-  "speed": 0,
-  "pitch": 1.0,
-  "maxChunkChars": 900,
-  "shortcut": "alt+r",
-  "debug": true,
-  "summarizerModel": "openai/gpt-oss-20b"
+  "$schema": "https://raw.githubusercontent.com/nikbrunner/pi-speak/main/src/config/schema.json",
+  "version": 1,
+  "tts": {
+    "voiceId": "Sierra",
+    "bitrate": "192k",
+    "speed": 0,
+    "pitch": 1.0,
+    "maxChunkChars": 900
+  },
+  "behavior": {
+    "shortcut": "alt+r",
+    "pingEnabled": true,
+    "pingOnStartEnabled": false,
+    "fallbackPingText": "Work finished."
+  },
+  "summarizer": {
+    "enabled": true,
+    "model": "openai/gpt-oss-20b",
+    "maxTokens": 60,
+    "timeoutMs": 5000
+  },
+  "debug": {
+    "enabled": true,
+    "logPath": "~/.pi-speak-debug.log",
+    "logMaxBytes": 2097152
+  },
+  "api": {
+    "unrealSpeechKey": null,
+    "openRouterKey": null
+  }
 }
 ```
 
 | Key               | Type    | Default                | Description                                 |
 | ----------------- | ------- | ---------------------- | ------------------------------------------- |
-| `voiceId`         | string  | `"Sierra"`             | Unreal Speech voice ID                      |
-| `bitrate`         | string  | `"192k"`               | Audio bitrate                               |
-| `speed`           | number  | `0`                    | Speech speed (-1.0 to 1.0)                  |
-| `pitch`           | number  | `1.0`                  | Speech pitch (0.5 to 1.5)                   |
-| `maxChunkChars`   | number  | `900`                  | Max chars per TTS request (API limit: 1000) |
-| `shortcut`        | string  | `"alt+r"`              | Keyboard shortcut for replay/stop           |
-| `debug`           | boolean | `true`                 | Write to `~/.pi-speak-debug.log`            |
-| `summarizerModel` | string  | `"openai/gpt-oss-20b"` | OpenRouter model for voice ping summaries   |
+| `tts.voiceId`     | string  | `"Sierra"`             | [Unreal Speech voice ID](https://docs.v8.unrealspeech.com/) |
+| `tts.bitrate`     | string  | `"192k"`              | Audio bitrate                               |
+| `tts.speed`       | number  | `0`                    | Speech speed (-1.0 to 1.0)                  |
+| `tts.pitch`       | number  | `1.0`                  | Speech pitch (0.5 to 1.5)                   |
+| `tts.maxChunkChars` | number | `900`                | Max chars per TTS request (API limit: 1000) |
+| `behavior.shortcut` | string | `"alt+r"`            | Keyboard shortcut for replay/stop           |
+| `behavior.pingEnabled` | boolean | `true`            | Speak ping on agent_end                     |
+| `behavior.pingOnStartEnabled` | boolean | `false`      | Speak welcome on session_start              |
+| `behavior.fallbackPingText` | string | `"Work finished."` | Fallback ping text when summarizer disabled |
+| `summarizer.enabled` | boolean | `true`             | Use LLM for ping summaries (vs fallback)    |
+| `summarizer.model` | string  | `"openai/gpt-oss-20b"` | [OpenRouter model](https://openrouter.ai/models) |
+| `summarizer.maxTokens` | number | `60`               | Max tokens for summarizer                   |
+| `summarizer.timeoutMs` | number | `5000`            | Timeout for summarizer API call             |
+| `debug.enabled`   | boolean | `true`                 | Write to debug log                          |
+| `debug.logPath`   | string  | `"~/.pi-speak-debug.log"` | Path to debug log file              |
+| `debug.logMaxBytes` | number | `2097152`            | Max size before log rotation                |
+| `api.unrealSpeechKey` | string\|null | `null`          | Unreal Speech API key (env var takes precedence) |
+| `api.openRouterKey` | string\|null | `null`           | OpenRouter API key (env var takes precedence) |
 
 ## Usage
 
