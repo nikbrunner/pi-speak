@@ -11,6 +11,13 @@ import { debug, debugError } from "./debug.js";
 export interface Platform {
   /** Play an MP3 file. Resolves when playback finishes. */
   playAudio(filePath: string, onProcess?: (proc: ChildProcess) => void): Promise<void>;
+  /** Whether this platform is supported */
+  readonly supported: boolean;
+}
+
+/** Check if the current platform is supported */
+export function isPlatformSupported(): boolean {
+  return process.platform === "darwin";
 }
 
 export function createPlatform(): Platform {
@@ -19,7 +26,10 @@ export function createPlatform(): Platform {
       return createMacOSPlatform();
     default:
       return {
-        playAudio: async () => {}
+        playAudio: async () => {
+          debug(`playAudio: platform "${process.platform}" is not supported — no audio playback`);
+        },
+        supported: false
       } as Platform;
   }
 }

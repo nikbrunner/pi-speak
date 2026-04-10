@@ -16,7 +16,7 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { initConfig, loadConfig } from "./config.js";
 import { debug, debugError, setDebugEnabled } from "./debug.js";
 import { stripMarkdown } from "./helpers.js";
-import { createPlatform } from "./platform.js";
+import { createPlatform, isPlatformSupported } from "./platform.js";
 import { summarizeForPing } from "./summarizer.js";
 import { TTSPlayer } from "./tts.js";
 
@@ -28,6 +28,14 @@ export interface UI {
 export default function (pi: ExtensionAPI) {
   const config = loadConfig();
   setDebugEnabled(config.debug);
+
+  // Warn if platform is not supported
+  if (!isPlatformSupported()) {
+    debug(`platform "${process.platform}" is not supported — audio playback disabled`);
+    pi.ui.notify(`speak: platform "${process.platform}" is not supported. Only macOS is supported for audio playback.`, "warning");
+    pi.ui.setWidget("speak", ["🔊 Platform not supported"]);
+  }
+
   const platform = createPlatform();
   const player = new TTSPlayer(platform, config);
 
