@@ -16,7 +16,7 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { initConfig, loadConfig } from "./config/index";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { stripMarkdown } from "./helpers";
-import { createPlatform, isPlatformSupported } from "./platform";
+import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
 import { summarizeForPing } from "./summarizer";
 import { TTSPlayer } from "./tts";
 
@@ -41,6 +41,7 @@ export default function (pi: ExtensionAPI) {
   let lastResponseText = "";
   let disabled = false;
   let sessionName = "";
+  let wasMutedOnLastResponse = false;
 
   // ── Extract assistant text ────────────────────────────────────────────────
 
@@ -86,6 +87,12 @@ export default function (pi: ExtensionAPI) {
       ctx.ui.setWidget("speak", ["🔊 Platform not supported"]);
     }
 
+    // Check if system is muted
+    if (isMacMuted()) {
+      debug("session_start: system is muted — voice readback will be skipped");
+      ctx.ui.notify("speak: system is muted — voice readback disabled. Unmute to enable.", "warning");
+    }
+
     // Capture session name for voice ping
     if (process.env.TMUX_PANE) {
       try {
@@ -128,6 +135,16 @@ export default function (pi: ExtensionAPI) {
     debug("=== agent_end ===");
     if (disabled) {
       debug("agent_end: SKIPPED (disabled)");
+      return;
+    }
+
+    // Check mute status dynamically to save API costs
+    const muted = isMacMuted();
+    wasMutedOnLastResponse = muted;
+
+    if (muted) {
+      debug("agent_end: SKIPPED (system is muted)");
+      ctx.ui.setWidget("speak", ["🔇 Muted  " + config.behavior.shortcut + " replay"]);
       return;
     }
 
@@ -178,6 +195,12 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
+      if (isMacMuted()) {
+        debug(`shortcut: SKIPPED (system is muted)`);
+        ctx.ui.notify("speak: system is muted — unmute to hear responses", "info");
+        return;
+      }
+
       if (player.playing) {
         debug(`shortcut: STOP (was playing)`);
         player.stop();
@@ -188,6 +211,14 @@ export default function (pi: ExtensionAPI) {
       if (!lastResponseText) {
         debug(`shortcut: no response to replay`);
         ctx.ui.notify("speak: no response to replay yet", "info");
+        return;
+      }
+
+      // Check if we need to regenerate (was muted when response came)
+      if (wasMutedOnLastResponse || player.cachedFiles.length === 0) {
+        debug(`shortcut: regenerating audio (was muted or no cache)`);
+        ctx.ui.setWidget("speak", ["🔊 Generating...  " + config.behavior.shortcut + " stop"]);
+        player.speak(lastResponseText, ctx.ui);
         return;
       }
 

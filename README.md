@@ -82,7 +82,7 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 - [x] Config location follows XDG spec (`~/.config/pi-speak/config.json`) — no standard convention exists for pi-package extension config
 - [x] Config Migration Support
 - [x] Remove ~/.env file loading (use process.env directly)
-- [ ] If muted, don't generate TTS to save costs.
+- [x] If muted, don't generate TTS to save costs.
   - don't play the summarizer, and show notification for the readback inside the TUI that its muted
 - [ ] Publish on npm
 - [ ] Linux support
