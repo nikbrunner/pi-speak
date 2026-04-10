@@ -1,8 +1,9 @@
 {
-  "name": "pi-speak",
+  "name": "@nbr/pi-speak",
   "version": "0.1.0",
   "description": "Voice readback extension for Pi — reads agent responses aloud via Unreal Speech TTS",
-  "private": true,
+  "keywords": ["pi-package"],
+  "private": false,
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
