@@ -20,6 +20,11 @@ import { createPlatform } from "./platform.js";
 import { summarizeForPing } from "./summarizer.js";
 import { TTSPlayer } from "./tts.js";
 
+export interface UI {
+  setWidget(key: string, content: string[] | undefined): void;
+  notify(msg: string, type: "info" | "warning" | "error"): void;
+}
+
 export default function (pi: ExtensionAPI) {
   const config = loadConfig();
   setDebugEnabled(config.debug);

@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { SpeakConfig } from "./config.js";
 import { debug } from "./debug.js";
+import type { UI } from "./index.js";
 import { chunkBySentences } from "./helpers.js";
 import type { Platform } from "./platform.js";
 
@@ -134,10 +135,7 @@ export class TTSPlayer {
   }
 
   /** Speak text aloud. Uses cached files if available, fetches otherwise. */
-  async speak(
-    text: string,
-    ui: { setWidget: (key: string, content: string[] | undefined) => void; notify: (msg: string, type: string) => void }
-  ): Promise<void> {
+  async speak(text: string, ui: UI): Promise<void> {
     if (!text) return;
 
     const myGeneration = ++this.playGeneration;
@@ -233,10 +231,7 @@ export class TTSPlayer {
   }
 
   /** Update the status widget */
-  private updateWidget(
-    ui: { setWidget: (key: string, content: string[] | undefined) => void },
-    disabled = false
-  ): void {
+  private updateWidget(ui: Pick<UI, "setWidget">, disabled = false): void {
     if (disabled) {
       ui.setWidget("speak", undefined);
       return;
