@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SpeakConfig } from "./config/schema";
 import { TTSPlayer } from "./tts";
 
@@ -34,6 +34,15 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe("TTSPlayer", () => {
+  beforeAll(() => {
+    // Set required env var for TTS
+    process.env.UNREAL_SPEECH_API_KEY = "test-api-key";
+  });
+
+  afterAll(() => {
+    delete process.env.UNREAL_SPEECH_API_KEY;
+  });
+
   const mockPlayAudio = vi.fn().mockResolvedValue(undefined);
 
   const createPlayer = (config?: Partial<SpeakConfig>): TTSPlayer => {
