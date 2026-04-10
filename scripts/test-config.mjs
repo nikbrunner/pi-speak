@@ -5,7 +5,6 @@
  *
  * This tests the Zod schema validation logic used in config.ts.
  */
-
 import { z } from "zod";
 
 console.log("🧪 Config Validation and Migration Tests");
@@ -15,34 +14,54 @@ console.log("=".repeat(50));
 const SpeakConfigSchema = z.object({
   $schema: z.string().url().default("https://example.com/schema"),
   version: z.number().int().min(0).default(1),
-  tts: z.object({
-    voiceId: z.string().default("Sierra"),
-    bitrate: z.string().default("192k"),
-    speed: z.number().min(-1).max(1).default(0),
-    pitch: z.number().min(0.5).max(1.5).default(1.0),
-    maxChunkChars: z.number().int().min(1).max(1000).default(900)
-  }).optional().default({}),
-  behavior: z.object({
-    shortcut: z.string().default("alt+r"),
-    pingEnabled: z.boolean().default(true),
-    pingOnStartEnabled: z.boolean().default(false),
-    fallbackPingText: z.string().default("Work finished.")
-  }).optional().default({}),
-  summarizer: z.object({
-    enabled: z.boolean().default(true),
-    model: z.string().default("openai/gpt-oss-20b"),
-    maxTokens: z.number().int().min(1).max(500).default(60),
-    timeoutMs: z.number().int().min(1000).max(60000).default(5000)
-  }).optional().default({}),
-  debug: z.object({
-    enabled: z.boolean().default(true),
-    logPath: z.string().default("~/.pi-speak-debug.log"),
-    logMaxBytes: z.number().int().min(1024).max(10 * 1024 * 1024).default(2 * 1024 * 1024)
-  }).optional().default({}),
-  api: z.object({
-    unrealSpeechKey: z.string().nullable().default(null),
-    openRouterKey: z.string().nullable().default(null)
-  }).optional().default({})
+  tts: z
+    .object({
+      voiceId: z.string().default("Sierra"),
+      bitrate: z.string().default("192k"),
+      speed: z.number().min(-1).max(1).default(0),
+      pitch: z.number().min(0.5).max(1.5).default(1.0),
+      maxChunkChars: z.number().int().min(1).max(1000).default(900)
+    })
+    .optional()
+    .default({}),
+  behavior: z
+    .object({
+      shortcut: z.string().default("alt+r"),
+      pingEnabled: z.boolean().default(true),
+      pingOnStartEnabled: z.boolean().default(false),
+      fallbackPingText: z.string().default("Work finished.")
+    })
+    .optional()
+    .default({}),
+  summarizer: z
+    .object({
+      enabled: z.boolean().default(true),
+      model: z.string().default("openai/gpt-oss-20b"),
+      maxTokens: z.number().int().min(1).max(500).default(60),
+      timeoutMs: z.number().int().min(1000).max(60000).default(5000)
+    })
+    .optional()
+    .default({}),
+  debug: z
+    .object({
+      enabled: z.boolean().default(true),
+      logPath: z.string().default("~/.pi-speak-debug.log"),
+      logMaxBytes: z
+        .number()
+        .int()
+        .min(1024)
+        .max(10 * 1024 * 1024)
+        .default(2 * 1024 * 1024)
+    })
+    .optional()
+    .default({}),
+  api: z
+    .object({
+      unrealSpeechKey: z.string().nullable().default(null),
+      openRouterKey: z.string().nullable().default(null)
+    })
+    .optional()
+    .default({})
 });
 
 const tests = [
@@ -52,12 +71,14 @@ const tests = [
       version: 1,
       tts: { voiceId: "Scarlett", bitrate: "128k" }
     },
-    check: (config) => {
-      return config.version === 1 &&
-             config.tts.voiceId === "Scarlett" &&
-             config.tts.bitrate === "128k" &&
-             config.tts.speed === 0 &&  // default
-             config.tts.pitch === 1.0; // default
+    check: config => {
+      return (
+        config.version === 1 &&
+        config.tts.voiceId === "Scarlett" &&
+        config.tts.bitrate === "128k" &&
+        config.tts.speed === 0 && // default
+        config.tts.pitch === 1.0
+      ); // default
     }
   },
   {
@@ -66,11 +87,13 @@ const tests = [
     // Note: Zod 4 doesn't cascade defaults into empty nested objects.
     // This is expected behavior - empty nested objects remain empty.
     // The DEFAULT_CONFIG fallback in loadConfig() handles the no-file case.
-    check: (config) => {
-      return config.version === 1 &&
-             typeof config.tts === "object" &&
-             typeof config.behavior === "object" &&
-             typeof config.summarizer === "object";
+    check: config => {
+      return (
+        config.version === 1 &&
+        typeof config.tts === "object" &&
+        typeof config.behavior === "object" &&
+        typeof config.summarizer === "object"
+      );
     }
   },
   {
@@ -105,17 +128,19 @@ const tests = [
       behavior: { shortcut: "cmd+r", pingEnabled: false },
       summarizer: { enabled: false, model: "anthropic/claude-3" }
     },
-    check: (config) => {
-      return config.version === 1 &&
-             config.tts.voiceId === "Scarlett" &&
-             config.tts.bitrate === "96k" &&
-             config.tts.speed === -0.5 &&
-             config.tts.pitch === 0.8 &&
-             config.tts.maxChunkChars === 500 &&
-             config.behavior.shortcut === "cmd+r" &&
-             config.behavior.pingEnabled === false &&
-             config.summarizer.enabled === false &&
-             config.summarizer.model === "anthropic/claude-3";
+    check: config => {
+      return (
+        config.version === 1 &&
+        config.tts.voiceId === "Scarlett" &&
+        config.tts.bitrate === "96k" &&
+        config.tts.speed === -0.5 &&
+        config.tts.pitch === 0.8 &&
+        config.tts.maxChunkChars === 500 &&
+        config.behavior.shortcut === "cmd+r" &&
+        config.behavior.pingEnabled === false &&
+        config.summarizer.enabled === false &&
+        config.summarizer.model === "anthropic/claude-3"
+      );
     }
   }
 ];
@@ -207,11 +232,13 @@ try {
   };
 
   const result = SpeakConfigSchema.safeParse(migratedConfig);
-  if (result.success &&
-      result.data.tts.voiceId === "Scarlett" &&
-      result.data.tts.speed === 0.5 &&
-      result.data.behavior.shortcut === "cmd+r" &&
-      result.data.version === 1) {
+  if (
+    result.success &&
+    result.data.tts.voiceId === "Scarlett" &&
+    result.data.tts.speed === 0.5 &&
+    result.data.behavior.shortcut === "cmd+r" &&
+    result.data.version === 1
+  ) {
     console.log("✅ PASS");
     passed++;
   } else {

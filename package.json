@@ -22,16 +22,17 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:lint": "eslint src",
-    "test:format": "prettier --check src",
+    "test:format": "prettier --check .",
     "test:compile": "tsc --noEmit --skipLibCheck",
     "test:config": "node scripts/test-config.mjs",
     "test:all": "npm run test && npm run test:lint && npm run test:format && npm run test:compile && npm run test:config",
-    "format": "prettier --write src",
-    "lint": "eslint --fix src && prettier --write src"
+    "format": "prettier --write --ignore-unknown .",
+    "lint": "eslint --fix ."
   },
   "pi": {
     "extensions": [
