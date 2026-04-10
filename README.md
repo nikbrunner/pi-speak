@@ -62,7 +62,7 @@ On first run, a default config is created at `~/.config/pi-speak/config.json`:
 | `debug`           | boolean | `true`                 | Write to `~/.pi-speak-debug.log`            |
 | `summarizerModel` | string  | `"openai/gpt-oss-20b"` | OpenRouter model for voice ping summaries   |
 
-Environment variables override file config: `PI_SPEAK_VOICE`, `PI_SPEAK_BITRATE`, `PI_SPEAK_SPEED`, `PI_SPEAK_PITCH`, `PI_SPEAK_SHORTCUT`, `PI_SPEAK_DEBUG`, `PI_SPEAK_SUMMARIZER_MODEL`.
+
 
 ## Usage
 
@@ -83,7 +83,7 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 - [x] Add release-please
 - [ ] Verify config setup
 - [ ] Config Migration Support
-- [ ] Discard env var override support
+- [x] Discard env var override support
 - [ ] Publish on npm
 - [ ] Linux support
 - [ ] Windows support

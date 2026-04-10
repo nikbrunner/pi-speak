@@ -2,7 +2,6 @@
  * Configuration for pi-speak extension.
  *
  * Reads from ~/.config/pi-speak/config.json, with sensible defaults.
- * Environment variables override file config.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -65,17 +64,7 @@ export function loadConfig(): SpeakConfig {
     debug(`loadConfig: no config file at ${CONFIG_PATH}, using defaults`);
   }
 
-  // Env overrides
-  const envOverrides: Partial<SpeakConfig> = {};
-  if (process.env.PI_SPEAK_VOICE) envOverrides.voiceId = process.env.PI_SPEAK_VOICE;
-  if (process.env.PI_SPEAK_BITRATE) envOverrides.bitrate = process.env.PI_SPEAK_BITRATE;
-  if (process.env.PI_SPEAK_SPEED) envOverrides.speed = parseFloat(process.env.PI_SPEAK_SPEED);
-  if (process.env.PI_SPEAK_PITCH) envOverrides.pitch = parseFloat(process.env.PI_SPEAK_PITCH);
-  if (process.env.PI_SPEAK_SHORTCUT) envOverrides.shortcut = process.env.PI_SPEAK_SHORTCUT;
-  if (process.env.PI_SPEAK_DEBUG !== undefined) envOverrides.debug = process.env.PI_SPEAK_DEBUG !== "0";
-  if (process.env.PI_SPEAK_SUMMARIZER_MODEL) envOverrides.summarizerModel = process.env.PI_SPEAK_SUMMARIZER_MODEL;
-
-  const config = { ...DEFAULT_CONFIG, ...fileConfig, ...envOverrides };
+  const config = { ...DEFAULT_CONFIG, ...fileConfig };
   debug(
     `loadConfig: voiceId=${config.voiceId} bitrate=${config.bitrate} speed=${config.speed} pitch=${config.pitch} shortcut=${config.shortcut}`
   );
