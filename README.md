@@ -5,28 +5,31 @@ Voice readback extension for [Pi](https://github.com/mariozechner/pi-coding-agen
 ## Features
 
 - **Voice readback** — Hear agent responses via Unreal Speech TTS
-- **Summary notifications** — macOS notification with session summary when agent finishes
+- **Voice ping** — Spoken summary when agent finishes (LLM-powered via OpenRouter, or fallback)
 - **Audio caching** — Responses cached for instant replay
 - **Replay shortcut** — `alt+r` to replay last response or stop playback
 - **Status widget** — Shows current playback state in the UI
 - **Lint feedback** — Auto-runs ESLint + Prettier after write/edit operations
-- **Cross-platform ready** — Platform abstraction exists for future Linux/Windows support
+- **macOS support** — Platform abstraction exists for future Linux/Windows support
 
 ## Installation
 
 > [!NOTE]
 > Not published on npm yet
 
+1. Install the extension:
+
 ```bash
 pi install git:github.com/nikbrunner/pi-speak
 ```
 
-2. Add your API key to `~/.env`:
+2. Add your API key to your environment by sourcing `~/.env` in your shell:
 
 ```sh
-export UNREAL_SPEECH_API_KEY=your-key-here
+# Add to your shell profile (~/.zshrc, ~/.bashrc, etc.)
+source ~/.env
 
-# or bring source it inline
+# Or set it inline:
 UNREAL_SPEECH_API_KEY=your-key-here pi
 ```
 
@@ -81,9 +84,9 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 ## TODO
 
 - [x] Add release-please
-- [ ] Verify config setup
+- [x] Config location follows XDG spec (`~/.config/pi-speak/config.json`) — no standard convention exists for pi-package extension config
 - [ ] Config Migration Support
-- [x] Discard env var override support
+- [x] Remove ~/.env file loading (use process.env directly)
 - [ ] Publish on npm
 - [ ] Linux support
 - [ ] Windows support
