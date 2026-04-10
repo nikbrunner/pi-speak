@@ -48,7 +48,8 @@ async function fetchTTS(text: string, config: TTSConfig): Promise<Buffer> {
       Bitrate: config.bitrate,
       Speed: config.speed,
       Pitch: config.pitch
-    })
+    }),
+    signal: AbortSignal.timeout(10_000)
   });
 
   if (!response.ok) {
