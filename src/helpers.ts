@@ -2,15 +2,6 @@
  * Shared helpers for pi-speak extension.
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-
-/** Shell-quote a string for use in single-quoted context */
-export function shellQuote(s: string): string {
-  return `'${s.replace(/'/g, "'\\''")}'`;
-}
-
 /** Strip markdown formatting for cleaner speech */
 export function stripMarkdown(text: string): string {
   return (
