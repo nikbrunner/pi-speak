@@ -128,25 +128,6 @@ npm run lint
 npm run format
 ```
 
-### Project Structure
-
-```
-src/
-├── index.ts           # Main extension entry point
-├── tts.ts             # TTS playback and caching
-├── summarizer.ts      # LLM-powered ping summarization
-├── platform.ts        # Platform abstraction (macOS)
-├── debug.ts           # Debug logging
-├── helpers.ts         # Text processing utilities
-└── config/
-    ├── index.ts       # Config loading and initialization
-    ├── schema.ts      # Zod schemas
-    ├── defaults.ts    # Default values
-    ├── migrations.ts  # Version migrations
-    ├── constants.ts   # Constants
-    └── schema.json    # JSON Schema for IDE autocomplete
-```
-
 ## Releases
 
 This project uses [release-please](https://github.com/googleapis/release-please) for automated versioning and changelog generation via [Conventional Commits](https://www.conventionalcommits.org/).
