@@ -46,21 +46,23 @@ On first run, a default config is created at `~/.config/pi-speak/config.json`:
   "pitch": 1.0,
   "maxChunkChars": 900,
   "shortcut": "alt+r",
-  "debug": true
+  "debug": true,
+  "summarizerModel": "openai/gpt-oss-20b"
 }
 ```
 
-| Key             | Type    | Default    | Description                                 |
-| --------------- | ------- | ---------- | ------------------------------------------- |
-| `voiceId`       | string  | `"Sierra"` | Unreal Speech voice ID                      |
-| `bitrate`       | string  | `"192k"`   | Audio bitrate                               |
-| `speed`         | number  | `0`        | Speech speed (-1.0 to 1.0)                  |
-| `pitch`         | number  | `1.0`      | Speech pitch (0.5 to 1.5)                   |
-| `maxChunkChars` | number  | `900`      | Max chars per TTS request (API limit: 1000) |
-| `shortcut`      | string  | `"alt+r"`  | Keyboard shortcut for replay/stop           |
-| `debug`         | boolean | `true`     | Write to `~/.pi-speak-debug.log`            |
+| Key               | Type    | Default                | Description                                 |
+| ----------------- | ------- | ---------------------- | ------------------------------------------- |
+| `voiceId`         | string  | `"Sierra"`             | Unreal Speech voice ID                      |
+| `bitrate`         | string  | `"192k"`               | Audio bitrate                               |
+| `speed`           | number  | `0`                    | Speech speed (-1.0 to 1.0)                  |
+| `pitch`           | number  | `1.0`                  | Speech pitch (0.5 to 1.5)                   |
+| `maxChunkChars`   | number  | `900`                  | Max chars per TTS request (API limit: 1000) |
+| `shortcut`        | string  | `"alt+r"`              | Keyboard shortcut for replay/stop           |
+| `debug`           | boolean | `true`                 | Write to `~/.pi-speak-debug.log`            |
+| `summarizerModel` | string  | `"openai/gpt-oss-20b"` | OpenRouter model for voice ping summaries   |
 
-Environment variables override file config: `PI_SPEAK_VOICE`, `PI_SPEAK_BITRATE`, `PI_SPEAK_SPEED`, `PI_SPEAK_PITCH`, `PI_SPEAK_SHORTCUT`, `PI_SPEAK_DEBUG`.
+Environment variables override file config: `PI_SPEAK_VOICE`, `PI_SPEAK_BITRATE`, `PI_SPEAK_SPEED`, `PI_SPEAK_PITCH`, `PI_SPEAK_SHORTCUT`, `PI_SPEAK_DEBUG`, `PI_SPEAK_SUMMARIZER_MODEL`.
 
 ## Usage
 
@@ -75,6 +77,7 @@ Log file: `~/.pi-speak-debug.log`
 ## TODO
 
 - [ ] Verify config setup
+- [ ] Config Migration Support
 - [ ] Discard env var override support
 - [ ] Publish on npm
 - [ ] Linux support
