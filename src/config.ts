@@ -1,13 +1,13 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { debug } from "./debug.js";
+
 /**
  * Configuration for pi-speak extension.
  *
  * Reads from ~/.config/pi-speak/config.json, with sensible defaults.
  */
-
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { debug } from "./debug.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
