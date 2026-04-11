@@ -19,29 +19,84 @@
       "properties": {
         "voiceId": {
           "default": "Sierra",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "Autumn",
+            "Melody",
+            "Hannah",
+            "Emily",
+            "Ivy",
+            "Kaitlyn",
+            "Luna",
+            "Willow",
+            "Lauren",
+            "Sierra",
+            "Noah",
+            "Jasper",
+            "Caleb",
+            "Ronan",
+            "Ethan",
+            "Daniel",
+            "Zane",
+            "Mei",
+            "Lian",
+            "Ting",
+            "Jing",
+            "Wei",
+            "Jian",
+            "Hao",
+            "Sheng",
+            "Lucía",
+            "Mateo",
+            "Javier",
+            "Élodie",
+            "Ananya",
+            "Priya",
+            "Arjun",
+            "Rohan",
+            "Giulia",
+            "Luca",
+            "Camila",
+            "Thiago",
+            "Rafael"
+          ],
+          "description": "Unreal Speech voice name"
         },
         "bitrate": {
           "default": "192k",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "16k",
+            "32k",
+            "48k",
+            "64k",
+            "128k",
+            "192k",
+            "256k",
+            "320k"
+          ],
+          "description": "Audio bitrate — lower saves bandwidth, higher improves fidelity"
         },
         "speed": {
           "default": 0,
           "type": "number",
           "minimum": -1,
-          "maximum": 1
+          "maximum": 1,
+          "description": "Speech speed adjustment (-1 to 1)"
         },
         "pitch": {
           "default": 1,
           "type": "number",
           "minimum": 0.5,
-          "maximum": 1.5
+          "maximum": 1.5,
+          "description": "Speech pitch adjustment (0.5 to 1.5)"
         },
         "maxChunkChars": {
           "default": 900,
           "type": "integer",
           "minimum": 1,
-          "maximum": 1000
+          "maximum": 1000,
+          "description": "Max characters per TTS chunk (Unreal Speech limit is 1000)"
         }
       }
     },
@@ -51,19 +106,23 @@
       "properties": {
         "shortcut": {
           "default": "alt+r",
-          "type": "string"
+          "type": "string",
+          "description": "Keyboard shortcut for replay/stop"
         },
         "pingEnabled": {
           "default": true,
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Speak a notification when the agent finishes"
         },
         "pingOnStartEnabled": {
           "default": false,
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Speak a welcome message on session start"
         },
         "fallbackPingText": {
           "default": "Work finished.",
-          "type": "string"
+          "type": "string",
+          "description": "Fallback text when summarizer is disabled"
         }
       }
     },
@@ -73,27 +132,32 @@
       "properties": {
         "enabled": {
           "default": true,
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Use LLM to summarize agent output for voice notification"
         },
         "model": {
           "default": "google/gemini-2.5-flash-lite",
-          "type": "string"
+          "type": "string",
+          "description": "OpenRouter model ID for summarization"
         },
         "maxTokens": {
           "default": 150,
           "type": "integer",
           "minimum": 1,
-          "maximum": 500
+          "maximum": 500,
+          "description": "Max tokens for summarizer response"
         },
         "timeoutMs": {
           "default": 5000,
           "type": "integer",
           "minimum": 1000,
-          "maximum": 60000
+          "maximum": 60000,
+          "description": "Summarizer request timeout in milliseconds"
         },
         "prompt": {
           "default": "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done.",
-          "type": "string"
+          "type": "string",
+          "description": "System prompt for the summarizer LLM"
         }
       }
     },
@@ -103,17 +167,20 @@
       "properties": {
         "enabled": {
           "default": true,
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Enable debug logging to file"
         },
         "logPath": {
           "default": "~/.pi-speak-debug.log",
-          "type": "string"
+          "type": "string",
+          "description": "Path to the debug log file"
         },
         "logMaxBytes": {
           "default": 2097152,
           "type": "integer",
           "minimum": 1024,
-          "maximum": 10485760
+          "maximum": 10485760,
+          "description": "Max log file size in bytes before rotation"
         }
       }
     },
@@ -130,7 +197,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Unreal Speech API key (env var takes precedence)"
         },
         "openRouterKey": {
           "default": null,
@@ -141,7 +209,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "OpenRouter API key (env var takes precedence)"
         }
       }
     }

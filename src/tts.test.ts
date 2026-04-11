@@ -238,10 +238,10 @@ describe("TTSPlayer", () => {
   describe("configuration", () => {
     it("should use custom voiceId from config", () => {
       const customPlayer = createPlayer({
-        tts: { voiceId: "Scarlett", bitrate: "192k", speed: 0, pitch: 1.0, maxChunkChars: 900 }
+        tts: { voiceId: "Melody", bitrate: "192k", speed: 0, pitch: 1.0, maxChunkChars: 900 }
       });
 
-      expect(customPlayer["config"].voiceId).toBe("Scarlett");
+      expect(customPlayer["config"].voiceId).toBe("Melody");
     });
 
     it("should use custom maxChunkChars from config", () => {

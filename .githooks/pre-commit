@@ -2,6 +2,6 @@
 set -e
 
 npm run generate:schema
-git add src/config/v1/schema.json
+git add src/config/v*/schema.json
 
 npm run test:all
