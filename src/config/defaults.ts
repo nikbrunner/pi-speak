@@ -23,7 +23,7 @@ export const DEFAULT_CONFIG: SpeakConfig = {
   summarizer: {
     enabled: true,
     model: "openai/gpt-oss-20b",
-    maxTokens: 60,
+    maxTokens: 150,
     timeoutMs: 5000
   },
   debug: {
