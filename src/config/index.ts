@@ -24,24 +24,38 @@ function warnUnknownKeys(raw: Record<string, unknown>): void {
   }
 }
 
-/** Validation errors to report to user via pi notification */
-let pendingValidationErrors: { path: string; message: string; value: unknown }[] | null = null;
+/** Validation errors to report to user */
+let pendingValidationErrors: { path: string; message: string; value: unknown }[] = [];
 
 /**
- * Returns validation errors from the last loadConfig() call.
- * Resets after being called.
+ * Extracts the faulty value from a Zod issue for display.
  */
-export function consumeValidationErrors(): { path: string; message: string; value: unknown }[] | null {
-  const errors = pendingValidationErrors;
-  pendingValidationErrors = null;
-  return errors;
+function extractFaultyValue(issue: { code: string; path: PropertyKey[] }, raw: Record<string, unknown>): unknown {
+  if (issue.code === "invalid_type") return (issue as { received?: unknown }).received;
+  // For range errors (too_big, too_small), return the actual config value at the path
+  const path = issue.path.join(".");
+  return path in raw ? raw[path] : undefined;
 }
 
 /**
- * Returns validation errors without consuming them (can be called multiple times).
+ * Captures validation errors from a Zod result into the module state.
+ */
+function captureValidationErrors(
+  result: { error: { issues: Array<{ code: string; path: PropertyKey[]; message: string }> } },
+  raw: Record<string, unknown>
+): void {
+  pendingValidationErrors = result.error.issues.map(issue => ({
+    path: issue.path.join(".") || "root",
+    message: issue.message,
+    value: extractFaultyValue(issue as { code: string; path: string[] }, raw)
+  }));
+}
+
+/**
+ * Returns validation errors (can be called multiple times without consuming).
  */
 export function getValidationErrors(): { path: string; message: string; value: unknown }[] {
-  return pendingValidationErrors ?? [];
+  return pendingValidationErrors;
 }
 
 export function loadConfig(): SpeakConfig {
@@ -83,17 +97,7 @@ export function loadConfig(): SpeakConfig {
   const result = SpeakConfigSchema.safeParse(rawConfig);
 
   if (!result.success) {
-    // Capture all validation errors with their values for user notification
-    pendingValidationErrors = result.error.issues.map(issue => ({
-      path: issue.path.join(".") || "root",
-      message: issue.message,
-      value:
-        issue.code === "invalid_type"
-          ? { expected: issue.expected, received: (issue as { received?: unknown }).received }
-          : issue.code === "too_big" || issue.code === "too_small"
-            ? rawConfig[issue.path.join(".") as keyof typeof rawConfig]
-            : rawConfig[issue.path[0] as string]
-    }));
+    captureValidationErrors(result, rawConfig);
     const errors = result.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ");
     debug(`loadConfig: validation failed — ${errors}`);
     debug(`loadConfig: using defaults due to validation errors`);
@@ -127,7 +131,7 @@ function saveConfig(config: SpeakConfig): void {
  */
 export function revalidateConfig(): void {
   if (!existsSync(CONFIG_PATH)) {
-    pendingValidationErrors = null;
+    pendingValidationErrors = [];
     return;
   }
 
@@ -141,20 +145,11 @@ export function revalidateConfig(): void {
 
   const result = SpeakConfigSchema.safeParse(rawConfig);
   if (!result.success) {
-    pendingValidationErrors = result.error.issues.map(issue => ({
-      path: issue.path.join(".") || "root",
-      message: issue.message,
-      value:
-        issue.code === "invalid_type"
-          ? { expected: issue.expected, received: (issue as { received?: unknown }).received }
-          : issue.code === "too_big" || issue.code === "too_small"
-            ? rawConfig[issue.path.join(".") as keyof typeof rawConfig]
-            : rawConfig[issue.path[0] as keyof typeof rawConfig]
-    }));
+    captureValidationErrors(result, rawConfig);
     return;
   }
 
-  pendingValidationErrors = null;
+  pendingValidationErrors = [];
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
