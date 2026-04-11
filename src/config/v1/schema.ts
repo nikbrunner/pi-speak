@@ -1,11 +1,9 @@
-/**
- * Zod schemas for pi-speak configuration.
- *
- * Uses Zod for runtime validation and TypeScript inference.
- */
-
 import { z } from "zod";
-import { SCHEMA_URL } from "./constants";
+
+const SCHEMA_URL = "https://raw.githubusercontent.com/nikbrunner/pi-speak/main/src/config/v1/schema.json";
+
+const CONFIG_DIR = `${process.env.HOME}/.config/pi-speak`;
+export const CONFIG_PATH = `${CONFIG_DIR}/config.json`;
 
 // ─── Sub-schemas ─────────────────────────────────────────────────────────────
 
@@ -28,8 +26,8 @@ export const BehaviorConfigSchema = z.object({
 export const SummarizerConfigSchema = z.object({
   // https://openrouter.ai/models
   enabled: z.boolean().default(true),
-  model: z.string().default("openai/gpt-oss-20b"),
-  maxTokens: z.number().int().min(1).max(500).default(60),
+  model: z.string().default("google/gemini-2.5-flash-lite"),
+  maxTokens: z.number().int().min(1).max(500).default(150),
   timeoutMs: z.number().int().min(1000).max(60000).default(5000),
   prompt: z
     .string()
@@ -56,16 +54,16 @@ export const ApiConfigSchema = z.object({
 
 // ─── Main schema ─────────────────────────────────────────────────────────────
 
-export { SCHEMA_URL } from "./constants";
-
 export const SpeakConfigSchema = z.object({
-  $schema: z.string().url().default(SCHEMA_URL),
+  $schema: z.url().default(SCHEMA_URL),
   version: z.number().int().min(0).default(1),
-  tts: TTSConfigSchema,
-  behavior: BehaviorConfigSchema,
-  summarizer: SummarizerConfigSchema,
-  debug: DebugConfigSchema,
-  api: ApiConfigSchema
+  tts: TTSConfigSchema.prefault({}),
+  behavior: BehaviorConfigSchema.prefault({}),
+  summarizer: SummarizerConfigSchema.prefault({}),
+  debug: DebugConfigSchema.prefault({}),
+  api: ApiConfigSchema.prefault({})
 });
+
+export const defaultConfig = SpeakConfigSchema.parse({});
 
 export type SpeakConfig = z.infer<typeof SpeakConfigSchema>;

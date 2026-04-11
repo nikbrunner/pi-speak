@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SpeakConfig } from "./config/schema";
+import type { SpeakConfig } from "./config/v1/schema";
 import { TTSPlayer } from "./tts";
 
 // Mock modules before importing TTSPlayer

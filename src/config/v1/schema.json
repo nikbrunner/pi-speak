@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "default": "https://raw.githubusercontent.com/nikbrunner/pi-speak/main/src/config/v1/schema.json",
+      "type": "string",
+      "format": "uri"
+    },
+    "version": {
+      "default": 1,
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "tts": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "voiceId": {
+          "default": "Sierra",
+          "type": "string"
+        },
+        "bitrate": {
+          "default": "192k",
+          "type": "string"
+        },
+        "speed": {
+          "default": 0,
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "pitch": {
+          "default": 1,
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.5
+        },
+        "maxChunkChars": {
+          "default": 900,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      }
+    },
+    "behavior": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "shortcut": {
+          "default": "alt+r",
+          "type": "string"
+        },
+        "pingEnabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "pingOnStartEnabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "fallbackPingText": {
+          "default": "Work finished.",
+          "type": "string"
+        }
+      }
+    },
+    "summarizer": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "model": {
+          "default": "google/gemini-2.5-flash-lite",
+          "type": "string"
+        },
+        "maxTokens": {
+          "default": 150,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "timeoutMs": {
+          "default": 5000,
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000
+        },
+        "prompt": {
+          "default": "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done.",
+          "type": "string"
+        }
+      }
+    },
+    "debug": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "logPath": {
+          "default": "~/.pi-speak-debug.log",
+          "type": "string"
+        },
+        "logMaxBytes": {
+          "default": 2097152,
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 10485760
+        }
+      }
+    },
+    "api": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "unrealSpeechKey": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "openRouterKey": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

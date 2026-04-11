@@ -14,6 +14,7 @@
 import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { getValidationErrors, initConfig, loadConfig, revalidateConfig } from "./config/index";
+import { CONFIG_PATH, defaultConfig } from "./config/v1/schema";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { stripMarkdown } from "./helpers";
 import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
@@ -26,7 +27,7 @@ export interface UI {
 }
 
 export default function (pi: ExtensionAPI) {
-  const config = loadConfig();
+  const config = loadConfig(defaultConfig);
   setDebugEnabled(config.debug.enabled);
   configureDebug(config.debug);
 
@@ -118,7 +119,7 @@ export default function (pi: ExtensionAPI) {
     }
 
     // Create default config file if missing
-    initConfig();
+    initConfig(CONFIG_PATH);
 
     // Check for required API key (should be set in user's environment)
     // Check env var first, then fall back to config file

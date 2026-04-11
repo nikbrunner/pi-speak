@@ -9,7 +9,7 @@ import { type ChildProcess } from "node:child_process";
 import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { SpeakConfig } from "./config/index";
+import type { SpeakConfig } from "./config/v1/schema";
 import { debug } from "./debug";
 import { chunkBySentences } from "./helpers";
 import type { UI } from "./index";

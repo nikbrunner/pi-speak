@@ -5,7 +5,7 @@
  * a 2-sentence "what was done, where" summary for the voice ping.
  */
 
-import type { SpeakConfig } from "./config/index";
+import type { SpeakConfig } from "./config/v1/schema";
 import { debug, debugError } from "./debug";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";

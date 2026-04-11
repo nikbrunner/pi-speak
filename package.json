@@ -36,6 +36,7 @@
     "test:all": "npm run test && npm run test:lint && npm run test:format && npm run test:compile && npm run test:config",
     "format": "prettier --write --ignore-unknown .",
     "lint": "eslint --fix .",
+    "generate:schema": "jiti scripts/generate-schema.ts",
     "inspect:lint": "eslint --inspect-config"
   },
   "pi": {

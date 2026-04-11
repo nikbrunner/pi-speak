@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SpeakConfig } from "./config/schema";
+import type { SpeakConfig } from "./config/v1/schema";
 import { summarizeForPing } from "./summarizer";
 
 // Mock the debug module

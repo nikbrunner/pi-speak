@@ -1,22 +1,13 @@
-/**
- * Configuration module for pi-speak extension.
- *
- * Reads from ~/.config/pi-speak/config.json, with sensible defaults.
- * Uses Zod for runtime validation and supports versioned migrations.
- */
-
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { debug } from "../debug";
-import { CONFIG_PATH } from "./constants";
-import { DEFAULT_CONFIG, generateDefaultConfigJson } from "./defaults";
-import { CURRENT_VERSION, migrate } from "./migrations";
-import { SpeakConfigSchema, type SpeakConfig } from "./schema";
+import { CONFIG_PATH, defaultConfig, SpeakConfigSchema, type SpeakConfig } from "./v1/schema";
 
 // ─── Load ───────────────────────────────────────────────────────────────────
 
 /** Warn about unknown config keys that will be ignored */
 function warnUnknownKeys(raw: Record<string, unknown>): void {
-  const knownKeys = new Set(["$schema", "version", "tts", "behavior", "summarizer", "debug", "api"]);
+  const knownKeys = new Set(Object.keys(SpeakConfigSchema.shape));
   const unknownKeys = Object.keys(raw).filter(key => !knownKeys.has(key));
 
   if (unknownKeys.length > 0) {
@@ -58,7 +49,7 @@ export function getValidationErrors(): { path: string; message: string; value: u
   return pendingValidationErrors;
 }
 
-export function loadConfig(): SpeakConfig {
+export function loadConfig(defaultConfig: SpeakConfig): SpeakConfig {
   let rawConfig: Record<string, unknown> = {};
   let parseError = false;
 
@@ -74,25 +65,15 @@ export function loadConfig(): SpeakConfig {
     }
   } else {
     debug(`loadConfig: no config file at ${CONFIG_PATH}, using defaults`);
-    return { ...DEFAULT_CONFIG };
+    return { ...defaultConfig };
   }
 
   if (parseError) {
     pendingValidationErrors = [{ path: "config", message: "JSON parse error", value: undefined }];
-    return { ...DEFAULT_CONFIG };
+    return { ...defaultConfig };
   }
 
   warnUnknownKeys(rawConfig);
-
-  const fileVersion = (rawConfig.version as number | undefined) ?? 0;
-
-  // Migrate if needed and save back to file
-  if (fileVersion < CURRENT_VERSION) {
-    debug(`loadConfig: migrating from v${fileVersion} to v${CURRENT_VERSION}`);
-    const migratedConfig = migrate(rawConfig, fileVersion);
-    saveConfig(migratedConfig);
-    return migratedConfig;
-  }
 
   const result = SpeakConfigSchema.safeParse(rawConfig);
 
@@ -101,7 +82,7 @@ export function loadConfig(): SpeakConfig {
     const errors = result.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ");
     debug(`loadConfig: validation failed — ${errors}`);
     debug(`loadConfig: using defaults due to validation errors`);
-    return { ...DEFAULT_CONFIG };
+    return { ...defaultConfig };
   }
 
   debug(
@@ -110,17 +91,6 @@ export function loadConfig(): SpeakConfig {
   );
 
   return result.data;
-}
-
-/** Save config to file */
-function saveConfig(config: SpeakConfig): void {
-  try {
-    writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n");
-    debug(`saveConfig: saved migrated config to ${CONFIG_PATH}`);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    debug(`saveConfig: failed to save ${CONFIG_PATH}: ${message}`);
-  }
 }
 
 // ─── Revalidate ───────────────────────────────────────────────────────────────
@@ -152,19 +122,17 @@ export function revalidateConfig(): void {
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
-export function initConfig(): void {
-  if (existsSync(CONFIG_PATH)) return;
+export function initConfig(configPath: string): void {
+  if (existsSync(configPath)) return;
+
+  const defaultConfigJson = JSON.stringify(defaultConfig, null, 2);
 
   try {
-    mkdirSync(CONFIG_PATH.replace("/config.json", ""), { recursive: true });
-    writeFileSync(CONFIG_PATH, generateDefaultConfigJson() + "\n");
-    debug(`initConfig: created default config at ${CONFIG_PATH}`);
+    mkdirSync(dirname(configPath), { recursive: true });
+    writeFileSync(configPath, defaultConfigJson + "\n");
+    debug(`initConfig: created default config at ${configPath}`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    debug(`initConfig: failed to create ${CONFIG_PATH}: ${message}`);
+    debug(`initConfig: failed to create ${configPath}: ${message}`);
   }
 }
-
-// Re-export types and schema for external use
-export type { SpeakConfig } from "./schema";
-export { SpeakConfigSchema, SCHEMA_URL } from "./schema";
