@@ -22,8 +22,8 @@ export const DEFAULT_CONFIG: SpeakConfig = {
   },
   summarizer: {
     enabled: true,
-    model: "openai/gpt-oss-20b",
-    maxTokens: 150,
+    model: "google/gemini-2.5-flash-lite",
+    maxTokens: 100,
     timeoutMs: 5000
   },
   debug: {
