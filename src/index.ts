@@ -19,7 +19,7 @@ import { CONFIG_PATH, defaultConfig } from "./config/v1/schema";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { stripMarkdown } from "./helpers";
 import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
-import { summarizeForPing } from "./summarizer";
+import { generateGreeting, summarizeForPing } from "./summarizer";
 import { TTSPlayer } from "./tts";
 
 export interface UI {
@@ -90,7 +90,7 @@ export default function (pi: ExtensionAPI) {
 
   // ── Session start ─────────────────────────────────────────────────────────
 
-  pi.on("session_start", async (_event, ctx) => {
+  pi.on("session_start", async (event, ctx) => {
     debug("=== session_start ===");
 
     // Warn if platform is not supported
@@ -125,7 +125,6 @@ export default function (pi: ExtensionAPI) {
     initConfig(CONFIG_PATH);
 
     // Check for required API key (should be set in user's environment)
-    // Check env var first, then fall back to config file
     const apiKey = process.env.UNREAL_SPEECH_API_KEY ?? config.api.unrealSpeechKey;
     if (!apiKey) {
       disabled = true;
@@ -142,7 +141,32 @@ export default function (pi: ExtensionAPI) {
     player.clearCache();
 
     debug("session_start: API key loaded, extension enabled");
-    ctx.ui.setWidget("speak", buildWidgetContent("🔊 " + config.behavior.shortcut + " read aloud"));
+    ctx.ui.setWidget("speak", buildWidgetContent("🔊 " + config.shortcut + " read aloud"));
+
+    // Greeting on session start
+    if (config.greeting.enabled && !isMacMuted()) {
+      const reason = event.reason;
+      let greetingPrompt: string | null = null;
+
+      if (reason === "startup" || reason === "new") {
+        greetingPrompt = config.greeting.prompt;
+      } else if (reason === "resume") {
+        greetingPrompt = config.greeting.resumePrompt;
+      }
+
+      if (greetingPrompt) {
+        debug(`session_start: generating greeting (reason=${reason})`);
+        const greeting = await generateGreeting({
+          prompt: greetingPrompt,
+          sessionName: sessionName || undefined,
+          config: config.summarizer,
+          apiKey: config.api.openRouterKey ?? undefined
+        });
+        if (greeting) {
+          player.ping(greeting);
+        }
+      }
+    }
   });
 
   // ── Input: revalidate config on user input ────────────────────────────────
@@ -167,7 +191,7 @@ export default function (pi: ExtensionAPI) {
 
     if (muted) {
       debug("agent_end: SKIPPED (system is muted)");
-      ctx.ui.setWidget("speak", buildWidgetContent("🔇 Muted  " + config.behavior.shortcut + " replay"));
+      ctx.ui.setWidget("speak", buildWidgetContent("🔇 Muted  " + config.shortcut + " replay"));
       return;
     }
 
@@ -184,11 +208,11 @@ export default function (pi: ExtensionAPI) {
       player.clearCache();
     }
     lastResponseText = text;
-    ctx.ui.setWidget("speak", buildWidgetContent("🔊 Ready  " + config.behavior.shortcut + " replay"));
+    ctx.ui.setWidget("speak", buildWidgetContent("🔊 Ready  " + config.shortcut + " replay"));
 
-    // Skip ping if disabled
-    if (!config.behavior.pingEnabled) {
-      debug("agent_end: ping disabled — skipping");
+    // Skip ping if summarizer disabled
+    if (!config.summarizer.enabled) {
+      debug("agent_end: summarizer disabled — skipping ping");
       return;
     }
 
@@ -198,7 +222,7 @@ export default function (pi: ExtensionAPI) {
       sessionName: sessionName || undefined,
       config: config.summarizer,
       apiKey: config.api.openRouterKey ?? undefined,
-      fallbackPingText: config.behavior.fallbackPingText
+      fallbackText: config.summarizer.fallbackText
     });
     debug(`agent_end: voice ping = "${ping}"`);
 
@@ -206,13 +230,13 @@ export default function (pi: ExtensionAPI) {
     player.ping(ping);
   });
 
-  // ── Shortcut: alt+r — replay / stop ───────────────────────────────────────
+  // ── Shortcut: replay / stop ─────────────────────────────────────────────
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pi.registerShortcut(config.behavior.shortcut as any, {
+  pi.registerShortcut(config.shortcut as any, {
     description: "Replay last response aloud / stop current playback",
     handler: ctx => {
-      debug(`=== shortcut: ${config.behavior.shortcut} pressed ===`);
+      debug(`=== shortcut: ${config.shortcut} pressed ===`);
       if (disabled) {
         debug(`shortcut: SKIPPED (disabled)`);
         return;
@@ -227,7 +251,7 @@ export default function (pi: ExtensionAPI) {
       if (player.playing) {
         debug(`shortcut: STOP (was playing)`);
         player.stop();
-        ctx.ui.setWidget("speak", buildWidgetContent("🔊 Ready  " + config.behavior.shortcut + " replay"));
+        ctx.ui.setWidget("speak", buildWidgetContent("🔊 Ready  " + config.shortcut + " replay"));
         return;
       }
 
@@ -240,7 +264,7 @@ export default function (pi: ExtensionAPI) {
       // Check if we need to regenerate (was muted when response came)
       if (wasMutedOnLastResponse || player.cachedFiles.length === 0) {
         debug(`shortcut: regenerating audio (was muted or no cache)`);
-        ctx.ui.setWidget("speak", buildWidgetContent("🔊 Generating...  " + config.behavior.shortcut + " stop"));
+        ctx.ui.setWidget("speak", buildWidgetContent("🔊 Generating...  " + config.shortcut + " stop"));
         player.speak(lastResponseText, ctx.ui);
         return;
       }

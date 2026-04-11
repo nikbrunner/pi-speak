@@ -13,7 +13,12 @@
       "minimum": 0,
       "maximum": 9007199254740991
     },
-    "tts": {
+    "shortcut": {
+      "default": "alt+r",
+      "type": "string",
+      "description": "Keyboard shortcut for replay/stop"
+    },
+    "readback": {
       "default": {},
       "type": "object",
       "properties": {
@@ -100,32 +105,6 @@
         }
       }
     },
-    "behavior": {
-      "default": {},
-      "type": "object",
-      "properties": {
-        "shortcut": {
-          "default": "alt+r",
-          "type": "string",
-          "description": "Keyboard shortcut for replay/stop"
-        },
-        "pingEnabled": {
-          "default": true,
-          "type": "boolean",
-          "description": "Speak a notification when the agent finishes"
-        },
-        "pingOnStartEnabled": {
-          "default": false,
-          "type": "boolean",
-          "description": "Speak a welcome message on session start"
-        },
-        "fallbackPingText": {
-          "default": "Work finished.",
-          "type": "string",
-          "description": "Fallback text when summarizer is disabled"
-        }
-      }
-    },
     "summarizer": {
       "default": {},
       "type": "object",
@@ -155,9 +134,35 @@
           "description": "Summarizer request timeout in milliseconds"
         },
         "prompt": {
-          "default": "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done.",
+          "default": "You caveman voice assistant. Summarize what code-agent did. Few word, max 2 sentence. Say session name if given. Be specific — what changed, what fixed, what built. No filler. No fluff. Grunt truth only.",
           "type": "string",
           "description": "System prompt for the summarizer LLM"
+        },
+        "fallbackText": {
+          "default": "Work done. Code better now.",
+          "type": "string",
+          "description": "Fallback text when summarizer is disabled or fails"
+        }
+      }
+    },
+    "greeting": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean",
+          "description": "Speak a greeting on session start"
+        },
+        "prompt": {
+          "default": "You caveman voice assistant. Developer start new code session. Greet them — short, fun, one sentence. Say session name if given. Vary tone: sometimes wise elder, sometimes excited cave-friend, sometimes deadpan. Never generic. Never boring.",
+          "type": "string",
+          "description": "LLM prompt for generating a greeting on startup or new session"
+        },
+        "resumePrompt": {
+          "default": "You caveman voice assistant. Developer come back to session they leave earlier. Welcome back — short, fun, one sentence. Say session name if given. Like friend who guard fire while they gone. Never generic.",
+          "type": "string",
+          "description": "LLM prompt for generating a greeting when resuming an existing session"
         }
       }
     },

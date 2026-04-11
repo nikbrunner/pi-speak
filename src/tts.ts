@@ -17,15 +17,15 @@ import type { Platform } from "./platform";
 
 const TEMP_FILE_PREFIX = "pi-speak-";
 
-/** TTS configuration — the voice/audio subset of SpeakConfig */
-export interface TTSConfig {
+/** Readback configuration — the voice/audio subset of SpeakConfig */
+export interface ReadbackConfig {
   voiceId: string;
   bitrate: string;
   speed: number;
   pitch: number;
 }
 
-const DEFAULT_TTS_CONFIG: TTSConfig = {
+const DEFAULT_READBACK_CONFIG: ReadbackConfig = {
   voiceId: "Sierra",
   bitrate: "192k",
   speed: 0,
@@ -36,7 +36,7 @@ const DEFAULT_TTS_CONFIG: TTSConfig = {
 const DEFAULT_MAX_CHUNK_CHARS = 900;
 
 /** Fetch MP3 audio from Unreal Speech /stream endpoint */
-async function fetchTTS(text: string, config: TTSConfig): Promise<Buffer> {
+async function fetchTTS(text: string, config: ReadbackConfig): Promise<Buffer> {
   const apiKey = process.env.UNREAL_SPEECH_API_KEY;
   if (!apiKey) throw new Error("UNREAL_SPEECH_API_KEY not set");
 
@@ -76,7 +76,7 @@ export class TTSPlayer {
   private currentPlayback: ChildProcess | null = null;
   private isPlaying = false;
   private playGeneration = 0;
-  private config: TTSConfig;
+  private config: ReadbackConfig;
   private maxChunkChars: number;
   private shortcutLabel: string;
 
@@ -85,13 +85,13 @@ export class TTSPlayer {
     config?: SpeakConfig
   ) {
     this.config = {
-      voiceId: config?.tts.voiceId ?? DEFAULT_TTS_CONFIG.voiceId,
-      bitrate: config?.tts.bitrate ?? DEFAULT_TTS_CONFIG.bitrate,
-      speed: config?.tts.speed ?? DEFAULT_TTS_CONFIG.speed,
-      pitch: config?.tts.pitch ?? DEFAULT_TTS_CONFIG.pitch
+      voiceId: config?.readback.voiceId ?? DEFAULT_READBACK_CONFIG.voiceId,
+      bitrate: config?.readback.bitrate ?? DEFAULT_READBACK_CONFIG.bitrate,
+      speed: config?.readback.speed ?? DEFAULT_READBACK_CONFIG.speed,
+      pitch: config?.readback.pitch ?? DEFAULT_READBACK_CONFIG.pitch
     };
-    this.maxChunkChars = config?.tts.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS;
-    this.shortcutLabel = config?.behavior.shortcut ?? "alt+r";
+    this.maxChunkChars = config?.readback.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS;
+    this.shortcutLabel = config?.shortcut ?? "alt+r";
   }
 
   get playing(): boolean {

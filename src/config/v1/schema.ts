@@ -66,7 +66,7 @@ const Bitrate = z.enum(["16k", "32k", "48k", "64k", "128k", "192k", "256k", "320
 
 // ─── Sub-schemas ─────────────────────────────────────────────────────────────
 
-export const TTSConfigSchema = z.object({
+export const ReadbackConfigSchema = z.object({
   voiceId: VoiceId.describe("Unreal Speech voice name").default("Sierra"),
   bitrate: Bitrate.describe("Audio bitrate — lower saves bandwidth, higher improves fidelity").default("192k"),
   speed: z.number().min(-1).max(1).describe("Speech speed adjustment (-1 to 1)").default(0),
@@ -80,13 +80,6 @@ export const TTSConfigSchema = z.object({
     .default(900)
 });
 
-export const BehaviorConfigSchema = z.object({
-  shortcut: z.string().describe("Keyboard shortcut for replay/stop").default("alt+r"),
-  pingEnabled: z.boolean().describe("Speak a notification when the agent finishes").default(true),
-  pingOnStartEnabled: z.boolean().describe("Speak a welcome message on session start").default(false),
-  fallbackPingText: z.string().describe("Fallback text when summarizer is disabled").default("Work finished.")
-});
-
 export const SummarizerConfigSchema = z.object({
   enabled: z.boolean().describe("Use LLM to summarize agent output for voice notification").default(true),
   model: z.string().describe("OpenRouter model ID for summarization").default("google/gemini-2.5-flash-lite"),
@@ -96,7 +89,27 @@ export const SummarizerConfigSchema = z.object({
     .string()
     .describe("System prompt for the summarizer LLM")
     .default(
-      "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done."
+      "You caveman voice assistant. Summarize what code-agent did. Few word, max 2 sentence. Say session name if given. Be specific — what changed, what fixed, what built. No filler. No fluff. Grunt truth only."
+    ),
+  fallbackText: z
+    .string()
+    .describe("Fallback text when summarizer is disabled or fails")
+    .default("Work done. Code better now.")
+});
+
+export const GreetingConfigSchema = z.object({
+  enabled: z.boolean().describe("Speak a greeting on session start").default(false),
+  prompt: z
+    .string()
+    .describe("LLM prompt for generating a greeting on startup or new session")
+    .default(
+      "You caveman voice assistant. Developer start new code session. Greet them — short, fun, one sentence. Say session name if given. Vary tone: sometimes wise elder, sometimes excited cave-friend, sometimes deadpan. Never generic. Never boring."
+    ),
+  resumePrompt: z
+    .string()
+    .describe("LLM prompt for generating a greeting when resuming an existing session")
+    .default(
+      "You caveman voice assistant. Developer come back to session they leave earlier. Welcome back — short, fun, one sentence. Say session name if given. Like friend who guard fire while they gone. Never generic."
     )
 });
 
@@ -122,9 +135,10 @@ export const ApiConfigSchema = z.object({
 export const SpeakConfigSchema = z.object({
   $schema: z.url().default(SCHEMA_URL),
   version: z.number().int().min(0).default(1),
-  tts: TTSConfigSchema.prefault({}),
-  behavior: BehaviorConfigSchema.prefault({}),
+  shortcut: z.string().describe("Keyboard shortcut for replay/stop").default("alt+r"),
+  readback: ReadbackConfigSchema.prefault({}),
   summarizer: SummarizerConfigSchema.prefault({}),
+  greeting: GreetingConfigSchema.prefault({}),
   debug: DebugConfigSchema.prefault({}),
   api: ApiConfigSchema.prefault({})
 });

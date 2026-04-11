@@ -19,62 +19,81 @@ export interface SummarizeContext {
   config: SpeakConfig["summarizer"];
   /** API key override */
   apiKey?: string;
-  /** Fallback ping text */
-  fallbackPingText: string;
+  /** Fallback text */
+  fallbackText: string;
+}
+
+export interface GreetingContext {
+  /** LLM prompt to generate the greeting */
+  prompt: string;
+  /** tmux session name (if available) */
+  sessionName?: string;
+  /** Summarizer config (model, maxTokens, timeoutMs) */
+  config: SpeakConfig["summarizer"];
+  /** API key override */
+  apiKey?: string;
+}
+
+/** Call OpenRouter with a system prompt and user message */
+async function callOpenRouter(opts: {
+  systemPrompt: string;
+  userMessage: string;
+  model: string;
+  maxTokens: number;
+  timeoutMs: number;
+  apiKey: string;
+}): Promise<string | null> {
+  const response = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${opts.apiKey}`
+    },
+    body: JSON.stringify({
+      model: opts.model,
+      max_tokens: opts.maxTokens,
+      messages: [
+        { role: "system", content: opts.systemPrompt },
+        { role: "user", content: opts.userMessage }
+      ]
+    }),
+    signal: AbortSignal.timeout(opts.timeoutMs)
+  });
+
+  if (!response.ok) {
+    debug(`openrouter: error ${response.status}`);
+    return null;
+  }
+
+  const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  return data.choices?.[0]?.message?.content?.trim() || null;
 }
 
 /** Generate a 2-sentence voice ping summary via OpenRouter */
 export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
-  // Check if summarizer is enabled
   if (!ctx.config.enabled) {
     debug("summarizer: disabled — using fallback summary");
     return fallbackSummary(ctx);
   }
 
-  // Use API key from context (config) or environment
   const apiKey = ctx.apiKey ?? process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     debug("summarizer: no OPENROUTER_API_KEY — using fallback summary");
     return fallbackSummary(ctx);
   }
 
-  const model = ctx.config.model;
-  const maxTokens = ctx.config.maxTokens;
-  const timeoutMs = ctx.config.timeoutMs;
-  const prompt = ctx.config.prompt;
   const where = ctx.sessionName ? ` in the "${ctx.sessionName}" session` : "";
 
   try {
-    const response = await fetch(OPENROUTER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        messages: [
-          {
-            role: "system",
-            content: prompt
-          },
-          {
-            role: "user",
-            content: `Write a voice notification: what was done${where}. What: ${ctx.responseText.slice(0, 500)}`
-          }
-        ]
-      }),
-      signal: AbortSignal.timeout(timeoutMs)
+    const summary = await callOpenRouter({
+      systemPrompt: ctx.config.prompt,
+      userMessage: `Write a voice notification: what was done${where}. What: ${ctx.responseText.slice(0, 500)}`,
+      model: ctx.config.model,
+      maxTokens: ctx.config.maxTokens,
+      timeoutMs: ctx.config.timeoutMs,
+      apiKey
     });
 
-    if (!response.ok) {
-      debug(`summarizer: OpenRouter error ${response.status}`);
-      return fallbackSummary(ctx);
-    }
-
-    const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const summary = data.choices?.[0]?.message?.content?.trim();
     if (!summary) {
       debug("summarizer: empty response from OpenRouter");
       return fallbackSummary(ctx);
@@ -88,9 +107,42 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
   }
 }
 
+/** Generate a session greeting via OpenRouter */
+export async function generateGreeting(ctx: GreetingContext): Promise<string | null> {
+  const apiKey = ctx.apiKey ?? process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    debug("greeting: no OPENROUTER_API_KEY — skipping");
+    return null;
+  }
+
+  const where = ctx.sessionName ? `Session name: "${ctx.sessionName}".` : "No session name available.";
+
+  try {
+    const greeting = await callOpenRouter({
+      systemPrompt: ctx.prompt,
+      userMessage: where,
+      model: ctx.config.model,
+      maxTokens: ctx.config.maxTokens,
+      timeoutMs: ctx.config.timeoutMs,
+      apiKey
+    });
+
+    if (!greeting) {
+      debug("greeting: empty response from OpenRouter");
+      return null;
+    }
+
+    debug(`greeting: LLM greeting = "${greeting}"`);
+    return greeting;
+  } catch (err) {
+    debugError("greeting: fetch failed", err);
+    return null;
+  }
+}
+
 /** Fallback: simple truncate-based summary if LLM is unavailable */
 function fallbackSummary(ctx: SummarizeContext): string {
   const where = ctx.sessionName ? ` in ${ctx.sessionName}` : "";
   const preview = ctx.responseText.slice(0, 100).replace(/\n/g, " ").trim();
-  return `${ctx.fallbackPingText}${where}. ${preview}…`;
+  return `${ctx.fallbackText}${where}. ${preview}…`;
 }

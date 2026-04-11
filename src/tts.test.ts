@@ -49,25 +49,28 @@ describe("TTSPlayer", () => {
     const defaultConfig: SpeakConfig = {
       $schema: "https://example.com/schema",
       version: 1,
-      tts: {
+      shortcut: "alt+r",
+      readback: {
         voiceId: "Sierra",
         bitrate: "192k",
         speed: 0,
         pitch: 1.0,
         maxChunkChars: 900
       },
-      behavior: {
-        shortcut: "alt+r",
-        pingEnabled: true,
-        pingOnStartEnabled: false,
-        fallbackPingText: "Work finished."
-      },
       summarizer: {
         enabled: true,
-        model: "openai/gpt-oss-20b",
-        maxTokens: 60,
+        model: "google/gemini-2.5-flash-lite",
+        maxTokens: 150,
         timeoutMs: 5000,
-        prompt: "You write voice notifications."
+        prompt: "You write voice notifications.",
+        fallbackText: "Work finished."
+      },
+      greeting: {
+        enabled: false,
+        prompt:
+          "Generate a short, friendly greeting for a coding session. Include the session name if given. One sentence max.",
+        resumePrompt:
+          "Generate a short welcome-back message for a resumed coding session. Include the session name if given. One sentence max."
       },
       debug: {
         enabled: true,
@@ -238,7 +241,7 @@ describe("TTSPlayer", () => {
   describe("configuration", () => {
     it("should use custom voiceId from config", () => {
       const customPlayer = createPlayer({
-        tts: { voiceId: "Melody", bitrate: "192k", speed: 0, pitch: 1.0, maxChunkChars: 900 }
+        readback: { voiceId: "Melody", bitrate: "192k", speed: 0, pitch: 1.0, maxChunkChars: 900 }
       });
 
       expect(customPlayer["config"].voiceId).toBe("Melody");
@@ -246,7 +249,7 @@ describe("TTSPlayer", () => {
 
     it("should use custom maxChunkChars from config", () => {
       const customPlayer = createPlayer({
-        tts: { voiceId: "Sierra", bitrate: "192k", speed: 0, pitch: 1.0, maxChunkChars: 500 }
+        readback: { voiceId: "Sierra", bitrate: "192k", speed: 0, pitch: 1.0, maxChunkChars: 500 }
       });
 
       expect(customPlayer["maxChunkChars"]).toBe(500);
@@ -254,12 +257,7 @@ describe("TTSPlayer", () => {
 
     it("should use custom shortcut label from config", () => {
       const customPlayer = createPlayer({
-        behavior: {
-          shortcut: "cmd+r",
-          pingEnabled: true,
-          pingOnStartEnabled: false,
-          fallbackPingText: "Work finished."
-        }
+        shortcut: "cmd+r"
       });
 
       expect(customPlayer["shortcutLabel"]).toBe("cmd+r");

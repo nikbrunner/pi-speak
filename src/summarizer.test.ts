@@ -11,10 +11,11 @@ vi.mock("./debug", () => ({
 describe("summarizeForPing", () => {
   const defaultConfig: SpeakConfig["summarizer"] = {
     enabled: true,
-    model: "openai/gpt-oss-20b",
-    maxTokens: 60,
+    model: "google/gemini-2.5-flash-lite",
+    maxTokens: 150,
     timeoutMs: 5000,
-    prompt: "You write voice notifications."
+    prompt: "You write voice notifications.",
+    fallbackText: "Work finished."
   };
 
   beforeEach(() => {
@@ -28,7 +29,7 @@ describe("summarizeForPing", () => {
       const result = await summarizeForPing({
         responseText: "Hello world",
         config: { ...defaultConfig, enabled: false },
-        fallbackPingText: "Work finished."
+        fallbackText: "Work finished."
       });
 
       expect(result).toBe("Work finished.. Hello world…");
@@ -39,7 +40,7 @@ describe("summarizeForPing", () => {
         responseText: "Hello world",
         config: defaultConfig,
         apiKey: undefined,
-        fallbackPingText: "Done."
+        fallbackText: "Done."
       });
 
       expect(result).toBe("Done.. Hello world…");
@@ -50,7 +51,7 @@ describe("summarizeForPing", () => {
         responseText: "Hello",
         sessionName: "my-session",
         config: { ...defaultConfig, enabled: false },
-        fallbackPingText: "Done"
+        fallbackText: "Done"
       });
 
       expect(result).toContain("my-session");
@@ -61,7 +62,7 @@ describe("summarizeForPing", () => {
       const result = await summarizeForPing({
         responseText: longText,
         config: { ...defaultConfig, enabled: false },
-        fallbackPingText: "Done"
+        fallbackText: "Done"
       });
 
       expect(result.length).toBeLessThan(longText.length + 20);
@@ -81,7 +82,7 @@ describe("summarizeForPing", () => {
         responseText: "Hello world",
         config: defaultConfig,
         apiKey: "test-key",
-        fallbackPingText: "Done"
+        fallbackText: "Done"
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -107,7 +108,7 @@ describe("summarizeForPing", () => {
         responseText: "Hello",
         config: defaultConfig,
         apiKey: "test-key",
-        fallbackPingText: "Error fallback"
+        fallbackText: "Error fallback"
       });
 
       expect(result).toContain("Error fallback");
@@ -124,7 +125,7 @@ describe("summarizeForPing", () => {
         responseText: "Hello",
         config: defaultConfig,
         apiKey: "test-key",
-        fallbackPingText: "Empty response"
+        fallbackText: "Empty response"
       });
 
       expect(result).toContain("Empty response");
@@ -138,7 +139,7 @@ describe("summarizeForPing", () => {
         responseText: "Hello",
         config: defaultConfig,
         apiKey: "test-key",
-        fallbackPingText: "Network error"
+        fallbackText: "Network error"
       });
 
       expect(result).toContain("Network error");

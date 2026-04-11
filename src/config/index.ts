@@ -48,8 +48,8 @@ export function loadConfig(defaultConfig: SpeakConfig): { config: SpeakConfig; e
   }
 
   debug(
-    `loadConfig: voiceId=${result.data.tts.voiceId} bitrate=${result.data.tts.bitrate} ` +
-      `speed=${result.data.tts.speed} pitch=${result.data.tts.pitch} shortcut=${result.data.behavior.shortcut}`
+    `loadConfig: voiceId=${result.data.readback.voiceId} bitrate=${result.data.readback.bitrate} ` +
+      `speed=${result.data.readback.speed} pitch=${result.data.readback.pitch} shortcut=${result.data.shortcut}`
   );
 
   return { config: result.data, error: null };
