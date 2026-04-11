@@ -135,21 +135,19 @@ export function revalidateConfig(): void {
     return;
   }
 
-  let rawConfig: Record<string, unknown> = {};
-  try {
-    rawConfig = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
-  } catch {
-    pendingValidationErrors = [{ path: "config", message: "JSON parse error", value: undefined }];
-    return;
-  }
+  const rawConfig = (() => {
+    try {
+      return JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+    } catch {
+      pendingValidationErrors = [{ path: "config", message: "JSON parse error", value: undefined }];
+      return null;
+    }
+  })();
+
+  if (rawConfig === null) return;
 
   const result = SpeakConfigSchema.safeParse(rawConfig);
-  if (!result.success) {
-    captureValidationErrors(result, rawConfig);
-    return;
-  }
-
-  pendingValidationErrors = [];
+  pendingValidationErrors = result.success ? [] : (captureValidationErrors(result, rawConfig), pendingValidationErrors);
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
