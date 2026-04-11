@@ -39,30 +39,12 @@ UNREAL_SPEECH_API_KEY=your-key-here pi
 
 ## Configuration
 
-On first run, a default config is created at `~/.config/pi-speak/config.json`:
+On first run, a default config is created at `~/.config/pi-speak/config.json`.
 
-See the default config [here](./src/config/schema.json).
+All available options with descriptions and defaults are defined in the schema:
 
-| Key                           | Type         | Default                   | Description                                                 |
-| ----------------------------- | ------------ | ------------------------- | ----------------------------------------------------------- |
-| `tts.voiceId`                 | string       | `"Sierra"`                | [Unreal Speech voice ID](https://docs.v8.unrealspeech.com/) |
-| `tts.bitrate`                 | string       | `"192k"`                  | Audio bitrate                                               |
-| `tts.speed`                   | number       | `0`                       | Speech speed (-1.0 to 1.0)                                  |
-| `tts.pitch`                   | number       | `1.0`                     | Speech pitch (0.5 to 1.5)                                   |
-| `tts.maxChunkChars`           | number       | `900`                     | Max chars per TTS request (API limit: 1000)                 |
-| `behavior.shortcut`           | string       | `"alt+r"`                 | Keyboard shortcut for replay/stop                           |
-| `behavior.pingEnabled`        | boolean      | `true`                    | Speak ping on agent_end                                     |
-| `behavior.pingOnStartEnabled` | boolean      | `false`                   | Speak welcome on session_start                              |
-| `behavior.fallbackPingText`   | string       | `"Work finished."`        | Fallback ping text when summarizer disabled                 |
-| `summarizer.enabled`          | boolean      | `true`                    | Use LLM for ping summaries (vs fallback)                    |
-| `summarizer.model`            | string       | `"openai/gpt-oss-20b"`    | [OpenRouter model](https://openrouter.ai/models)            |
-| `summarizer.maxTokens`        | number       | `60`                      | Max tokens for summarizer                                   |
-| `summarizer.timeoutMs`        | number       | `5000`                    | Timeout for summarizer API call                             |
-| `debug.enabled`               | boolean      | `true`                    | Write to debug log                                          |
-| `debug.logPath`               | string       | `"~/.pi-speak-debug.log"` | Path to debug log file                                      |
-| `debug.logMaxBytes`           | number       | `2097152`                 | Max size before log rotation                                |
-| `api.unrealSpeechKey`         | string\|null | `null`                    | Unreal Speech API key (env var takes precedence)            |
-| `api.openRouterKey`           | string\|null | `null`                    | OpenRouter API key (env var takes precedence)               |
+- **[schema.ts](./src/config/v1/schema.ts)** — Zod source with descriptions, defaults, and enums
+- **[schema.json](./src/config/v1/schema.json)** — Generated JSON Schema (enables editor autocomplete via `$schema`)
 
 ## Usage
 
@@ -120,8 +102,8 @@ npm run test:format
 # Type check
 npm run test:compile
 
-# Config validation
-npm run test:config
+# Regenerate JSON schema after changing schema.ts
+npm run generate:schema
 
 # Fix lint and format issues
 npm run lint

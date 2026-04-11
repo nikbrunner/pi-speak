@@ -36,8 +36,10 @@ npm run test:all
 npm run test:lint      # ESLint
 npm run test:format    # Prettier
 npm run test:compile   # TypeScript
-npm run test:config    # Config validation
+npm run generate:schema # Regenerate JSON schema
 ```
+
+> **Note:** Pre-commit hooks are installed automatically via `npm install` (the `prepare` script sets `core.hooksPath`). The hook runs `generate:schema` and `test:all` before each commit.
 
 ### Fixing Issues
 

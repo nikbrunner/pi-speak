@@ -15,11 +15,11 @@ user-invocable: false
 
 ### Key Extension Events
 
-| Event                | Purpose                                                             |
-| -------------------- | ------------------------------------------------------------------- |
-| `session_start`      | Initialize TTS player, check API keys, warn on unsupported platform |
-| `agent_end`          | Extract assistant text, generate voice ping, speak summary          |
-| `tool_execution_end` | Triggers lint checks (handled by separate extension)                |
+| Event                | Purpose                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| `session_start`      | Initialize TTS player, check API keys, warn on unsupported platform, speak greeting |
+| `agent_end`          | Extract assistant text, generate voice ping, speak summary                          |
+| `tool_execution_end` | Triggers lint checks (handled by separate extension)                                |
 
 ### Shortcuts
 
@@ -33,14 +33,14 @@ user-invocable: false
 | `src/tts.ts`               | TTSPlayer class — chunks text, calls Unreal Speech API, plays audio |
 | `src/summarizer.ts`        | OpenRouter LLM call to generate ping text                           |
 | `src/platform.ts`          | macOS audio playback (afplay), mute detection                       |
-| `src/config/`              | Zod schema, defaults, migrations                                    |
+| `src/config/v1/schema.ts`  | Versioned Zod schema with defaults + JSON schema generation         |
 | `src/helpers.ts`           | stripMarkdown, chunkText utilities                                  |
 | `src/debug.ts`             | Debug logging to file                                               |
 | `.pi/extensions/checks.ts` | Lint hook — runs on write/edit                                      |
 
 ## Config Schema
 
-Located at `src/config/schema.ts` — Zod-based validation.
+Located at `src/config/v1/schema.ts` — Zod-based validation with generated JSON schema.
 
 Default config path: `~/.config/pi-speak/config.json`
 
@@ -57,6 +57,7 @@ Default config path: `~/.config/pi-speak/config.json`
 npm test           # unit tests with Vitest
 npm run test:watch # watch mode
 npm run test:all   # full quality gate (test + lint + format + type check)
+npm run generate:schema # regenerate JSON schema after schema.ts changes
 ```
 
 ## Releases
