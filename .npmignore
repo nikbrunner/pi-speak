@@ -14,6 +14,14 @@ tsconfig.json
 eslint.config.ts
 prettier.config.ts
 
+# Agent/dev config
+.agents/
+.claude/
+.githooks/
+.pi/
+AGENTS.md
+CONTRIBUTING.md
+
 # Plans
 plans/
 

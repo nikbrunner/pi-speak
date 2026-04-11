@@ -1,8 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
 import { z } from "zod";
 import { debug } from "../debug";
-import { CONFIG_PATH, defaultConfig, SpeakConfigSchema, type SpeakConfig } from "./v1/schema";
+import { CONFIG_PATH, SpeakConfigSchema, type SpeakConfig } from "./v1/schema";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -70,21 +69,4 @@ export function revalidateConfig(): z.ZodError | Error | null {
 
   const result = SpeakConfigSchema.safeParse(rawConfig);
   return result.success ? null : result.error;
-}
-
-// ─── Init ───────────────────────────────────────────────────────────────────
-
-export function initConfig(configPath: string): void {
-  if (existsSync(configPath)) return;
-
-  const defaultConfigJson = JSON.stringify(defaultConfig, null, 2);
-
-  try {
-    mkdirSync(dirname(configPath), { recursive: true });
-    writeFileSync(configPath, defaultConfigJson + "\n");
-    debug(`initConfig: created default config at ${configPath}`);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    debug(`initConfig: failed to create ${configPath}: ${message}`);
-  }
 }

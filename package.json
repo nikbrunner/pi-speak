@@ -2,7 +2,7 @@
   "name": "@nbr/pi-speak",
   "version": "0.1.0",
   "engines": {
-    "node": ">=24"
+    "node": ">=22"
   },
   "description": "Voice readback extension for Pi — reads agent responses aloud via Unreal Speech TTS",
   "keywords": [
