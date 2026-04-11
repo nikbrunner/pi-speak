@@ -13,7 +13,8 @@ describe("summarizeForPing", () => {
     enabled: true,
     model: "openai/gpt-oss-20b",
     maxTokens: 60,
-    timeoutMs: 5000
+    timeoutMs: 5000,
+    prompt: "You write voice notifications."
   };
 
   beforeEach(() => {

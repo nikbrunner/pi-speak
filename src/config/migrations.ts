@@ -1,32 +1,19 @@
 /**
  * Configuration migrations for pi-speak.
  *
- * Handles upgrades from older config versions to the current schema.
+ * Each migration transforms a config from version N to N+1.
+ * On load, every config passes through the full chain from its current
+ * version up to CURRENT_VERSION.
  */
 
 import { SCHEMA_URL } from "./constants";
 import { DEFAULT_CONFIG } from "./defaults";
 import type { SpeakConfig } from "./schema";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+type Migration = (cfg: Record<string, unknown>) => Record<string, unknown>;
 
-interface LegacyConfigV0 {
-  voiceId?: string;
-  bitrate?: string;
-  speed?: number;
-  pitch?: number;
-  maxChunkChars?: number;
-  shortcut?: string;
-  debug?: boolean;
-  summarizerModel?: string;
-}
-
-// ─── Migrations ──────────────────────────────────────────────────────────────
-
-/**
- * Migrate v0 (flat) config to v1 (nested) schema.
- */
-function migrateV0ToV1(raw: LegacyConfigV0): SpeakConfig {
+/** v0 (flat) → v1 (nested schema) */
+function migrateV0ToV1(raw: Record<string, unknown>): Record<string, unknown> {
   return {
     $schema: SCHEMA_URL,
     version: 1,
@@ -47,7 +34,8 @@ function migrateV0ToV1(raw: LegacyConfigV0): SpeakConfig {
       enabled: DEFAULT_CONFIG.summarizer.enabled,
       model: raw.summarizerModel ?? DEFAULT_CONFIG.summarizer.model,
       maxTokens: DEFAULT_CONFIG.summarizer.maxTokens,
-      timeoutMs: DEFAULT_CONFIG.summarizer.timeoutMs
+      timeoutMs: DEFAULT_CONFIG.summarizer.timeoutMs,
+      prompt: DEFAULT_CONFIG.summarizer.prompt
     },
     debug: {
       enabled: raw.debug ?? DEFAULT_CONFIG.debug.enabled,
@@ -61,22 +49,32 @@ function migrateV0ToV1(raw: LegacyConfigV0): SpeakConfig {
   };
 }
 
-// ─── Export migration function ───────────────────────────────────────────────
+/** v1 → v2 (add summarizer.prompt) */
+function migrateV1ToV2(raw: Record<string, unknown>): Record<string, unknown> {
+  const summarizer = (raw.summarizer ?? {}) as Record<string, unknown>;
+  if (summarizer.prompt === undefined) {
+    summarizer.prompt = DEFAULT_CONFIG.summarizer.prompt;
+  }
+  return { ...raw, version: 2, summarizer };
+}
 
-export const CURRENT_VERSION = 1;
+const migrations: Migration[] = [
+  migrateV0ToV1, // index 0: runs for fromVersion === 0
+  migrateV1ToV2 // index 1: runs for fromVersion === 1
+];
+
+export const CURRENT_VERSION = migrations.length;
 
 /**
  * Migrate raw config to current schema version.
+ * Applies each migration in sequence from fromVersion up to CURRENT_VERSION.
  */
 export function migrate(raw: unknown, fromVersion: number): SpeakConfig {
-  const cfg = raw as Record<string, unknown>;
+  let cfg = raw as Record<string, unknown>;
 
-  if (fromVersion < 1) {
-    return migrateV0ToV1(cfg as LegacyConfigV0);
+  for (let i = fromVersion; i < migrations.length; i++) {
+    cfg = migrations[i](cfg);
   }
-
-  // Future migrations:
-  // if (fromVersion < 2) { ... }
 
   return cfg as SpeakConfig;
 }

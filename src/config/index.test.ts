@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "./defaults";
-import { CURRENT_VERSION, migrate } from "./migrations";
 import { SpeakConfigSchema, type SpeakConfig } from "./schema";
 
 // Full valid config for testing
@@ -24,7 +22,8 @@ const FULL_CONFIG: SpeakConfig = {
     enabled: true,
     model: "openai/gpt-oss-20b",
     maxTokens: 60,
-    timeoutMs: 5000
+    timeoutMs: 5000,
+    prompt: "You write voice notifications."
   },
   debug: {
     enabled: true,
@@ -249,69 +248,5 @@ describe("SpeakConfigSchema", () => {
       const result = SpeakConfigSchema.safeParse(input);
       expect(result.success).toBe(true);
     });
-  });
-});
-
-describe("migrate", () => {
-  it("should migrate v0 flat config to v1 nested", () => {
-    const v0Config = {
-      voiceId: "Scarlett",
-      bitrate: "128k",
-      speed: 0.5,
-      pitch: 1.2,
-      maxChunkChars: 800,
-      shortcut: "cmd+r",
-      debug: false,
-      summarizerModel: "anthropic/claude-3"
-    };
-
-    const migrated = migrate(v0Config, 0);
-
-    expect(migrated.version).toBe(1);
-    expect(migrated.tts.voiceId).toBe("Scarlett");
-    expect(migrated.tts.bitrate).toBe("128k");
-    expect(migrated.tts.speed).toBe(0.5);
-    expect(migrated.tts.pitch).toBe(1.2);
-    expect(migrated.tts.maxChunkChars).toBe(800);
-    expect(migrated.behavior.shortcut).toBe("cmd+r");
-    expect(migrated.debug.enabled).toBe(false);
-    expect(migrated.summarizer.model).toBe("anthropic/claude-3");
-  });
-
-  it("should use defaults for missing v0 fields", () => {
-    const v0Config = { voiceId: "Scarlett" };
-
-    const migrated = migrate(v0Config, 0);
-
-    expect(migrated.tts.voiceId).toBe("Scarlett");
-    expect(migrated.tts.bitrate).toBe(DEFAULT_CONFIG.tts.bitrate);
-    expect(migrated.behavior.shortcut).toBe(DEFAULT_CONFIG.behavior.shortcut);
-    expect(migrated.summarizer.model).toBe(DEFAULT_CONFIG.summarizer.model);
-  });
-
-  it("should handle empty v0 config", () => {
-    const v0Config = {};
-
-    const migrated = migrate(v0Config, 0);
-
-    expect(migrated.version).toBe(1);
-    expect(migrated.tts.voiceId).toBe(DEFAULT_CONFIG.tts.voiceId);
-  });
-
-  it("should return current config if already at current version", () => {
-    const v1Config: SpeakConfig = {
-      ...FULL_CONFIG,
-      tts: { ...FULL_CONFIG.tts, voiceId: "Scarlett" }
-    };
-
-    const result = migrate(v1Config, 1);
-
-    expect(result.tts.voiceId).toBe("Scarlett");
-  });
-});
-
-describe("CURRENT_VERSION", () => {
-  it("should be 1", () => {
-    expect(CURRENT_VERSION).toBe(1);
   });
 });

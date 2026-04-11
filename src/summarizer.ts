@@ -9,8 +9,6 @@ import type { SpeakConfig } from "./config/index";
 import { debug, debugError } from "./debug";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MAX_TOKENS = 60;
-const DEFAULT_TIMEOUT_MS = 5000;
 
 export interface SummarizeContext {
   /** What the assistant did (truncated text of the response) */
@@ -41,8 +39,9 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
   }
 
   const model = ctx.config.model;
-  const maxTokens = ctx.config.maxTokens ?? DEFAULT_MAX_TOKENS;
-  const timeoutMs = ctx.config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const maxTokens = ctx.config.maxTokens;
+  const timeoutMs = ctx.config.timeoutMs;
+  const prompt = ctx.config.prompt;
   const where = ctx.sessionName ? ` in the "${ctx.sessionName}" session` : "";
 
   try {
@@ -58,8 +57,7 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
         messages: [
           {
             role: "system",
-            content:
-              "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done."
+            content: prompt
           },
           {
             role: "user",

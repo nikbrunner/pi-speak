@@ -24,7 +24,9 @@ export const DEFAULT_CONFIG: SpeakConfig = {
     enabled: true,
     model: "google/gemini-2.5-flash-lite",
     maxTokens: 100,
-    timeoutMs: 5000
+    timeoutMs: 5000,
+    prompt:
+      "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done."
   },
   debug: {
     enabled: true,

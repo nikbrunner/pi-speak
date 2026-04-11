@@ -30,7 +30,12 @@ export const SummarizerConfigSchema = z.object({
   enabled: z.boolean().default(true),
   model: z.string().default("openai/gpt-oss-20b"),
   maxTokens: z.number().int().min(1).max(500).default(60),
-  timeoutMs: z.number().int().min(1000).max(60000).default(5000)
+  timeoutMs: z.number().int().min(1000).max(60000).default(5000),
+  prompt: z
+    .string()
+    .default(
+      "You write ultra-concise voice notifications. Always include the session name if given. Max 2 sentences. Be specific about what was done."
+    )
 });
 
 export const DebugConfigSchema = z.object({
