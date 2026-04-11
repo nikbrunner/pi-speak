@@ -36,3 +36,7 @@ export const DEFAULT_CONFIG: SpeakConfig = {
     openRouterKey: null
   }
 };
+
+export function generateDefaultConfigJson(): string {
+  return JSON.stringify(DEFAULT_CONFIG, null, 2);
+}

@@ -7,8 +7,8 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { debug } from "../debug";
-import { CONFIG_PATH, SCHEMA_URL } from "./constants";
-import { DEFAULT_CONFIG } from "./defaults";
+import { CONFIG_PATH } from "./constants";
+import { DEFAULT_CONFIG, generateDefaultConfigJson } from "./defaults";
 import { CURRENT_VERSION, migrate } from "./migrations";
 import { SpeakConfigSchema, type SpeakConfig } from "./schema";
 
@@ -159,54 +159,12 @@ export function initConfig(): void {
 
   try {
     mkdirSync(CONFIG_PATH.replace("/config.json", ""), { recursive: true });
-    writeFileSync(CONFIG_PATH, generateDefaultConfigContent() + "\n");
+    writeFileSync(CONFIG_PATH, generateDefaultConfigJson() + "\n");
     debug(`initConfig: created default config at ${CONFIG_PATH}`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     debug(`initConfig: failed to create ${CONFIG_PATH}: ${message}`);
   }
-}
-
-function generateDefaultConfigContent(): string {
-  return JSON.stringify(
-    {
-      $schema: SCHEMA_URL,
-      version: 1,
-      // https://docs.v8.unrealspeech.com/
-      tts: {
-        voiceId: "Sierra",
-        bitrate: "192k",
-        speed: 0,
-        pitch: 1.0,
-        maxChunkChars: 900
-      },
-      behavior: {
-        shortcut: "alt+r",
-        pingEnabled: true,
-        pingOnStartEnabled: false,
-        fallbackPingText: "Work finished."
-      },
-      // https://openrouter.ai/models
-      summarizer: {
-        enabled: true,
-        model: "openai/gpt-oss-20b",
-        maxTokens: 150,
-        timeoutMs: 5000
-      },
-      debug: {
-        enabled: true,
-        logPath: "~/.pi-speak-debug.log",
-        logMaxBytes: 2097152
-      },
-      api: {
-        // Optional: set API keys here (env vars take precedence)
-        unrealSpeechKey: null,
-        openRouterKey: null
-      }
-    },
-    null,
-    2
-  );
 }
 
 // Re-export types and schema for external use
