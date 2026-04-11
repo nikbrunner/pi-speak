@@ -13,7 +13,8 @@
 
 import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { getValidationErrors, initConfig, loadConfig, revalidateConfig } from "./config/index";
+import { z } from "zod";
+import { initConfig, loadConfig, revalidateConfig } from "./config/index";
 import { CONFIG_PATH, defaultConfig } from "./config/v1/schema";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { stripMarkdown } from "./helpers";
@@ -27,7 +28,8 @@ export interface UI {
 }
 
 export default function (pi: ExtensionAPI) {
-  const config = loadConfig(defaultConfig);
+  const { config, error: initialError } = loadConfig(defaultConfig);
+
   setDebugEnabled(config.debug.enabled);
   configureDebug(config.debug);
 
@@ -39,6 +41,7 @@ export default function (pi: ExtensionAPI) {
 
   // ── State ──────────────────────────────────────────────────────────────────
 
+  let configError: z.ZodError | Error | null = initialError;
   let lastResponseText = "";
   let disabled = false;
   let sessionName = "";
@@ -75,14 +78,14 @@ export default function (pi: ExtensionAPI) {
 
   /** Build widget content: validation errors first, then normal status */
   function buildWidgetContent(normalLine: string): string[] {
-    const validationErrors = getValidationErrors();
-    if (validationErrors.length === 0) return [normalLine];
-    const errorLines = validationErrors.map(
-      err =>
-        `⚠️ ${err.path}: ${err.message}` +
-        (err.value !== undefined && typeof err.value !== "object" ? ` (got ${JSON.stringify(err.value)})` : "")
-    );
-    return [...errorLines, normalLine];
+    if (!configError) return [normalLine];
+
+    if (configError instanceof z.ZodError) {
+      const errorLines = configError.issues.map(issue => `⚠️ ${issue.path.join(".") || "root"}: ${issue.message}`);
+      return [...errorLines, normalLine];
+    }
+
+    return [`⚠️ ${configError.message}`, normalLine];
   }
 
   // ── Session start ─────────────────────────────────────────────────────────
@@ -146,7 +149,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("input", async () => {
     // Re-read and re-validate config to detect fixes without reloading
-    revalidateConfig();
+    configError = revalidateConfig();
   });
 
   // ── Agent end ─────────────────────────────────────────────────────────────
