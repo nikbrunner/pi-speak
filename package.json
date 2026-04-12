@@ -22,6 +22,11 @@
     "url": "https://github.com/nikbrunner/pi-speak/issues"
   },
   "private": false,
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "src/index.ts",
   "type": "module",
   "scripts": {

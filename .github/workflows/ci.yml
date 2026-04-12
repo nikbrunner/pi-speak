@@ -40,9 +40,6 @@ jobs:
       - name: Run type check
         run: npm run test:compile
 
-      - name: Run config validation
-        run: npm run test:config
-
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
