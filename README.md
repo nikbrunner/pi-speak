@@ -9,12 +9,10 @@ Voice readback extension for [Pi](https://github.com/mariozechner/pi-coding-agen
 
 ## Features
 
-- **Voice readback** — Hear agent responses via Unreal Speech TTS
+- **Voice readback** — Press a keybind to hear agent responses via Unreal Speech TTS
 - **Voice ping** — Spoken summary when agent finishes (LLM-powered via OpenRouter, or fallback)
 - **Audio caching** — Responses cached for instant replay
-- **Replay shortcut** — `alt+r` to replay last response or stop playback
 - **Status widget** — Shows current playback state in the UI
-- **Lint feedback** — Auto-runs ESLint + Prettier after write/edit operations
 - **macOS support** — Platform abstraction exists for future Linux/Windows support
 
 ## Installation
