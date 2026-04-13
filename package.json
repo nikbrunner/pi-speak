@@ -1,9 +1,6 @@
 {
-  "name": "@nbr/pi-speak",
-  "version": "0.2.0",
-  "engines": {
-    "node": ">=22"
-  },
+  "name": "pi-speak",
+  "author": "Nikolaus Brunner <nik@nbr.haus>",
   "description": "Voice readback extension for Pi — reads agent responses aloud via Unreal Speech TTS",
   "keywords": [
     "pi-package",
@@ -12,8 +9,9 @@
     "voice",
     "accessibility"
   ],
+  "private": false,
+  "version": "0.2.0",
   "license": "MIT",
-  "author": "Nikolaus Brunner <nik@nbr.haus>",
   "repository": {
     "type": "git",
     "url": "https://github.com/nikbrunner/pi-speak"
@@ -21,7 +19,9 @@
   "bugs": {
     "url": "https://github.com/nikbrunner/pi-speak/issues"
   },
-  "private": false,
+  "engines": {
+    "node": ">=22"
+  },
   "files": [
     "src",
     "README.md",

@@ -1,6 +1,8 @@
 # pi-speak
 
-[![npm version](https://img.shields.io/npm/v/@nbr/pi-speak.svg)](https://www.npmjs.com/package/@nbr/pi-speak)
+> ⚠️ **Early development** — API and features may change. Install at your own risk.
+
+[![npm version](https://img.shields.io/npm/v/pi-speak.svg)](https://www.npmjs.com/package/pi-speak)
 [![Test Status](https://github.com/nikbrunner/pi-speak/actions/workflows/ci.yml/badge.svg)](https://github.com/nikbrunner/pi-speak/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -20,7 +22,7 @@ Voice readback extension for [Pi](https://github.com/mariozechner/pi-coding-agen
 1. Install the extension:
 
 ```bash
-pi install npm:@nbr/pi-speak
+pi install npm:pi-speak
 ```
 
 2. Add your API key to your environment by sourcing `~/.env` in your shell:
@@ -122,7 +124,7 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 ### Extension not loading
 
-1. Verify the extension is installed: `pi install npm:@nbr/pi-speak`
+1. Verify the extension is installed: `pi install npm:pi-speak`
 2. Check Pi logs for extension errors
 3. Ensure you're on macOS (Linux/Windows audio not yet supported)
 

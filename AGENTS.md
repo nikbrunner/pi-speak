@@ -14,4 +14,4 @@ See `.agents/skills/` for project-specific knowledge.
 
 ## Packaging
 
-Distributed via `pi install npm:@nbr/pi-speak`. See **README.md** for full details.
+Distributed via `pi install npm:@nikbrunner/pi-speak`. See **README.md** for full details.
