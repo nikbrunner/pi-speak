@@ -46,15 +46,15 @@ describe("summarizeForPing", () => {
       expect(result).toBe("Done.. Hello world…");
     });
 
-    it("should include session name in fallback", async () => {
+    it("should include project name in fallback", async () => {
       const result = await summarizeForPing({
         responseText: "Hello",
-        sessionName: "my-session",
+        projectName: "My Project",
         config: { ...defaultConfig, enabled: false },
         fallbackText: "Done"
       });
 
-      expect(result).toContain("my-session");
+      expect(result).toContain("My Project");
     });
 
     it("should truncate long response text in fallback", async () => {

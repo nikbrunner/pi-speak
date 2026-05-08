@@ -11,13 +11,12 @@
  * Optional: OPENROUTER_API_KEY for smarter voice ping summaries
  */
 
-import { execSync } from "node:child_process";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { z } from "zod";
 import { loadConfig, revalidateConfig } from "./config/index";
 import { defaultConfig } from "./config/v1/schema";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
-import { stripMarkdown } from "./helpers";
+import { getProjectName, stripMarkdown } from "./helpers";
 import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
 import { summarizeForPing } from "./summarizer";
 import { TTSPlayer } from "./tts";
@@ -44,7 +43,7 @@ export default function (pi: ExtensionAPI) {
   let configError: z.ZodError | Error | null = initialError;
   let lastResponseText = "";
   let disabled = false;
-  let sessionName = "";
+  let projectName = "";
   let wasMutedOnLastResponse = false;
 
   // ── Extract assistant text ────────────────────────────────────────────────
@@ -109,17 +108,8 @@ export default function (pi: ExtensionAPI) {
       ctx.ui.notify("speak: system is muted — voice readback disabled. Unmute to enable.", "warning");
     }
 
-    // Capture session name for voice ping
-    if (process.env.TMUX_PANE) {
-      try {
-        sessionName = execSync(`tmux display-message -p -t '${process.env.TMUX_PANE}' '#{session_name}'`, {
-          encoding: "utf-8",
-          stdio: ["pipe", "pipe", "pipe"]
-        }).trim();
-      } catch {
-        sessionName = "";
-      }
-    }
+    // Capture project name for voice ping (derived from cwd)
+    projectName = getProjectName();
 
     // Check for required API key (should be set in user's environment)
     const apiKey = process.env.UNREAL_SPEECH_API_KEY ?? config.api.unrealSpeechKey;
@@ -191,7 +181,7 @@ export default function (pi: ExtensionAPI) {
     // Generate short voice ping summary (LLM if OpenRouter key, else fallback)
     const ping = await summarizeForPing({
       responseText: text,
-      sessionName: sessionName || undefined,
+      projectName: projectName || undefined,
       config: config.summarizer,
       apiKey: config.api.openRouterKey ?? undefined,
       fallbackText: config.summarizer.fallbackText

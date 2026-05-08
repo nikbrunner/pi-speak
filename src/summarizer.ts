@@ -13,8 +13,8 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 export interface SummarizeContext {
   /** What the assistant did (truncated text of the response) */
   responseText: string;
-  /** tmux session name (if available) */
-  sessionName?: string;
+  /** Human-readable project name (derived from cwd) */
+  projectName?: string;
   /** Config for the summarizer */
   config: SpeakConfig["summarizer"];
   /** API key override */
@@ -71,7 +71,7 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
     return fallbackSummary(ctx);
   }
 
-  const where = ctx.sessionName ? ` in the "${ctx.sessionName}" session` : "";
+  const where = ctx.projectName ? ` in the "${ctx.projectName}" project` : "";
 
   try {
     const summary = await callOpenRouter({
@@ -98,7 +98,7 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
 
 /** Fallback: simple truncate-based summary if LLM is unavailable */
 function fallbackSummary(ctx: SummarizeContext): string {
-  const where = ctx.sessionName ? ` in ${ctx.sessionName}` : "";
+  const where = ctx.projectName ? ` in ${ctx.projectName}` : "";
   const preview = ctx.responseText.slice(0, 100).replace(/\n/g, " ").trim();
   return `${ctx.fallbackText}${where}. ${preview}…`;
 }
