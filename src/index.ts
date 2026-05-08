@@ -19,7 +19,7 @@ import { defaultConfig } from "./config/v1/schema";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { stripMarkdown } from "./helpers";
 import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
-import { generateGreeting, summarizeForPing } from "./summarizer";
+import { summarizeForPing } from "./summarizer";
 import { TTSPlayer } from "./tts";
 
 export interface UI {
@@ -139,31 +139,6 @@ export default function (pi: ExtensionAPI) {
 
     debug("session_start: API key loaded, extension enabled");
     ctx.ui.setWidget("speak", buildWidgetContent("🔊 " + config.shortcut + " read aloud"));
-
-    // Greeting on session start
-    if (config.greeting.enabled && !isMacMuted()) {
-      const reason = event.reason;
-      let greetingPrompt: string | null = null;
-
-      if (reason === "startup" || reason === "new") {
-        greetingPrompt = config.greeting.prompt;
-      } else if (reason === "resume") {
-        greetingPrompt = config.greeting.resumePrompt;
-      }
-
-      if (greetingPrompt) {
-        debug(`session_start: generating greeting (reason=${reason})`);
-        const greeting = await generateGreeting({
-          prompt: greetingPrompt,
-          sessionName: sessionName || undefined,
-          config: config.summarizer,
-          apiKey: config.api.openRouterKey ?? undefined
-        });
-        if (greeting) {
-          player.ping(greeting);
-        }
-      }
-    }
   });
 
   // ── Input: revalidate config on user input ────────────────────────────────

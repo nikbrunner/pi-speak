@@ -145,27 +145,6 @@
         }
       }
     },
-    "greeting": {
-      "default": {},
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": false,
-          "type": "boolean",
-          "description": "Speak a greeting on session start"
-        },
-        "prompt": {
-          "default": "You caveman voice assistant. Developer start new code session. Greet them — short, fun, one sentence. Say session name if given. Vary tone: sometimes wise elder, sometimes excited cave-friend, sometimes deadpan. Never generic. Never boring.",
-          "type": "string",
-          "description": "LLM prompt for generating a greeting on startup or new session"
-        },
-        "resumePrompt": {
-          "default": "You caveman voice assistant. Developer come back to session they leave earlier. Welcome back — short, fun, one sentence. Say session name if given. Like friend who guard fire while they gone. Never generic.",
-          "type": "string",
-          "description": "LLM prompt for generating a greeting when resuming an existing session"
-        }
-      }
-    },
     "debug": {
       "default": {},
       "type": "object",

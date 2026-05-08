@@ -15,11 +15,11 @@ user-invocable: false
 
 ### Key Extension Events
 
-| Event                | Purpose                                                                             |
-| -------------------- | ----------------------------------------------------------------------------------- |
-| `session_start`      | Initialize TTS player, check API keys, warn on unsupported platform, speak greeting |
-| `agent_end`          | Extract assistant text, generate voice ping, speak summary                          |
-| `tool_execution_end` | Triggers lint checks (handled by separate extension)                                |
+| Event                | Purpose                                                             |
+| -------------------- | ------------------------------------------------------------------- |
+| `session_start`      | Initialize TTS player, check API keys, warn on unsupported platform |
+| `agent_end`          | Extract assistant text, generate voice ping, speak summary          |
+| `tool_execution_end` | Triggers lint checks (handled by separate extension)                |
 
 ### Shortcuts
 

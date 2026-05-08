@@ -97,22 +97,6 @@ export const SummarizerConfigSchema = z.object({
     .default("Work done. Code better now.")
 });
 
-export const GreetingConfigSchema = z.object({
-  enabled: z.boolean().describe("Speak a greeting on session start").default(false),
-  prompt: z
-    .string()
-    .describe("LLM prompt for generating a greeting on startup or new session")
-    .default(
-      "You caveman voice assistant. Developer start new code session. Greet them — short, fun, one sentence. Say session name if given. Vary tone: sometimes wise elder, sometimes excited cave-friend, sometimes deadpan. Never generic. Never boring."
-    ),
-  resumePrompt: z
-    .string()
-    .describe("LLM prompt for generating a greeting when resuming an existing session")
-    .default(
-      "You caveman voice assistant. Developer come back to session they leave earlier. Welcome back — short, fun, one sentence. Say session name if given. Like friend who guard fire while they gone. Never generic."
-    )
-});
-
 export const DebugConfigSchema = z.object({
   enabled: z.boolean().describe("Enable debug logging to file").default(true),
   logPath: z.string().describe("Path to the debug log file").default("~/.pi-speak-debug.log"),
@@ -138,7 +122,6 @@ export const SpeakConfigSchema = z.object({
   shortcut: z.string().describe("Keyboard shortcut for replay/stop").default("alt+r"),
   readback: ReadbackConfigSchema.prefault({}),
   summarizer: SummarizerConfigSchema.prefault({}),
-  greeting: GreetingConfigSchema.prefault({}),
   debug: DebugConfigSchema.prefault({}),
   api: ApiConfigSchema.prefault({})
 });

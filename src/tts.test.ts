@@ -65,13 +65,6 @@ describe("TTSPlayer", () => {
         prompt: "You write voice notifications.",
         fallbackText: "Work finished."
       },
-      greeting: {
-        enabled: false,
-        prompt:
-          "Generate a short, friendly greeting for a coding session. Include the session name if given. One sentence max.",
-        resumePrompt:
-          "Generate a short welcome-back message for a resumed coding session. Include the session name if given. One sentence max."
-      },
       debug: {
         enabled: true,
         logPath: "~/.pi-speak-debug.log",

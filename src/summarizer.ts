@@ -23,17 +23,6 @@ export interface SummarizeContext {
   fallbackText: string;
 }
 
-export interface GreetingContext {
-  /** LLM prompt to generate the greeting */
-  prompt: string;
-  /** tmux session name (if available) */
-  sessionName?: string;
-  /** Summarizer config (model, maxTokens, timeoutMs) */
-  config: SpeakConfig["summarizer"];
-  /** API key override */
-  apiKey?: string;
-}
-
 /** Call OpenRouter with a system prompt and user message */
 async function callOpenRouter(opts: {
   systemPrompt: string;
@@ -104,39 +93,6 @@ export async function summarizeForPing(ctx: SummarizeContext): Promise<string> {
   } catch (err) {
     debugError("summarizer: fetch failed", err);
     return fallbackSummary(ctx);
-  }
-}
-
-/** Generate a session greeting via OpenRouter */
-export async function generateGreeting(ctx: GreetingContext): Promise<string | null> {
-  const apiKey = ctx.apiKey ?? process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    debug("greeting: no OPENROUTER_API_KEY — skipping");
-    return null;
-  }
-
-  const where = ctx.sessionName ? `Session name: "${ctx.sessionName}".` : "No session name available.";
-
-  try {
-    const greeting = await callOpenRouter({
-      systemPrompt: ctx.prompt,
-      userMessage: where,
-      model: ctx.config.model,
-      maxTokens: ctx.config.maxTokens,
-      timeoutMs: ctx.config.timeoutMs,
-      apiKey
-    });
-
-    if (!greeting) {
-      debug("greeting: empty response from OpenRouter");
-      return null;
-    }
-
-    debug(`greeting: LLM greeting = "${greeting}"`);
-    return greeting;
-  } catch (err) {
-    debugError("greeting: fetch failed", err);
-    return null;
   }
 }
 
