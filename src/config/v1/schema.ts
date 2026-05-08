@@ -69,8 +69,8 @@ const Bitrate = z.enum(["16k", "32k", "48k", "64k", "128k", "192k", "256k", "320
 export const ReadbackConfigSchema = z.object({
   voiceId: VoiceId.describe("Unreal Speech voice name").default("Sierra"),
   bitrate: Bitrate.describe("Audio bitrate — lower saves bandwidth, higher improves fidelity").default("192k"),
-  speed: z.number().min(-1).max(1).describe("Speech speed adjustment (-1 to 1)").default(0),
-  pitch: z.number().min(0.5).max(1.5).describe("Speech pitch adjustment (0.5 to 1.5)").default(1.0),
+  speed: z.number().min(-1).max(1).describe("Speech speed adjustment (-1 to 1)").default(-0.1),
+  pitch: z.number().min(0.5).max(1.5).describe("Speech pitch adjustment (0.5 to 1.5)").default(0.98),
   maxChunkChars: z
     .number()
     .int()
@@ -89,7 +89,7 @@ export const SummarizerConfigSchema = z.object({
     .string()
     .describe("System prompt for the summarizer LLM")
     .default(
-      "You caveman voice assistant. Summarize what code-agent did. Few word, max 2 sentence. Say session name if given. Be specific — what changed, what fixed, what built. No filler. No fluff. Grunt truth only."
+      "You just watched a developer and their AI agent work together. Say what they built, fixed, or changed — in one natural sentence, like you're leaning over to tell a teammate. Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project')."
     ),
   fallbackText: z
     .string()

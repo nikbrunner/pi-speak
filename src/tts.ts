@@ -28,8 +28,8 @@ export interface ReadbackConfig {
 const DEFAULT_READBACK_CONFIG: ReadbackConfig = {
   voiceId: "Sierra",
   bitrate: "192k",
-  speed: 0,
-  pitch: 1.0
+  speed: -0.1,
+  pitch: 0.98
 };
 
 /** Default max chunk size */
