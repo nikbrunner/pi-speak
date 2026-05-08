@@ -83,14 +83,14 @@
           "description": "Audio bitrate — lower saves bandwidth, higher improves fidelity"
         },
         "speed": {
-          "default": 0,
+          "default": -0.1,
           "type": "number",
           "minimum": -1,
           "maximum": 1,
           "description": "Speech speed adjustment (-1 to 1)"
         },
         "pitch": {
-          "default": 1,
+          "default": 0.98,
           "type": "number",
           "minimum": 0.5,
           "maximum": 1.5,
@@ -134,7 +134,7 @@
           "description": "Summarizer request timeout in milliseconds"
         },
         "prompt": {
-          "default": "You caveman voice assistant. Summarize what code-agent did. Few word, max 2 sentence. Say session name if given. Be specific — what changed, what fixed, what built. No filler. No fluff. Grunt truth only.",
+          "default": "You just watched a developer and their AI agent work together. Say what they built, fixed, or changed — in one natural sentence, like you're leaning over to tell a teammate. Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project').",
           "type": "string",
           "description": "System prompt for the summarizer LLM"
         },

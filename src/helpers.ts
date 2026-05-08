@@ -6,11 +6,13 @@
 export function stripMarkdown(text: string): string {
   return (
     text
-      // Remove code blocks
-      .replace(/```[\s\S]*?```/g, match => {
-        return match.replace(/```\w*\n?/g, "").trim();
-      })
-      // Remove inline code backticks
+      // Remove fenced code blocks entirely (reading code aloud is terrible)
+      .replace(/```[\s\S]*?```/g, "")
+      // Remove markdown tables (converted to nothing — too noisy spoken)
+      .replace(/^\|.*\|$/gm, "")
+      // Remove table separator/delimiter rows
+      .replace(/^\|[\s:-]+\|$/gm, "")
+      // Remove inline code backticks, keep the content (short names are fine spoken)
       .replace(/`([^`]+)`/g, "$1")
       // Remove bold/italic markers
       .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
@@ -26,8 +28,12 @@ export function stripMarkdown(text: string): string {
       // Remove list markers
       .replace(/^\s*[-*+]\s+/gm, "")
       .replace(/^\s*\d+\.\s+/gm, "")
-      // Collapse multiple whitespace
-      .replace(/\n{2,}/g, "\n\n")
+      // Remove HTML tags
+      .replace(/<[^>]+>/g, "")
+      // Collapse multiple blank lines (code/table removal leaves gaps)
+      .replace(/\n{3,}/g, "\n\n")
+      // Remove leading blank lines
+      .replace(/^\n+/, "")
       .trim()
   );
 }
@@ -77,6 +83,22 @@ export function chunkBySentences(text: string, maxChars: number): string[] {
   }
 
   return result;
+}
+
+/** Extract a human-readable project name from the current working directory */
+export function getProjectName(): string {
+  try {
+    const cwd = process.cwd();
+    const dirName = cwd.split("/").pop() ?? cwd;
+    // Convert kebab-case and snake_case to spaces, title case each word
+    return dirName
+      .replace(/[-_]/g, " ")
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  } catch {
+    return "";
+  }
 }
 
 /** Generate a one-line summary for notifications */

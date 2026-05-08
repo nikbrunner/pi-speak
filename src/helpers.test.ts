@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { chunkBySentences, stripMarkdown, summarize } from "./helpers";
 
 describe("stripMarkdown", () => {
-  it("should remove code blocks and preserve content", () => {
+  it("should remove code blocks entirely", () => {
     const input = "```javascript\nconsole.log('hello');\n```";
     const output = stripMarkdown(input);
-    expect(output).toBe("console.log('hello');");
+    expect(output).toBe("");
   });
 
   it("should remove inline code backticks", () => {
@@ -81,7 +81,7 @@ def hello():
     expect(output).toContain("Title");
     expect(output).toContain("Bold and italic text");
     expect(output).toContain("inline code");
-    expect(output).toContain("def hello():");
+    expect(output).not.toContain("def hello():");
     expect(output).toContain("Link");
     expect(output).toContain("List item 1");
     expect(output).not.toContain("**");
@@ -96,6 +96,22 @@ def hello():
     const input = "Line 1\n\n\n\nLine 2";
     const output = stripMarkdown(input);
     expect(output).toBe("Line 1\n\nLine 2");
+  });
+
+  it("should remove markdown tables entirely", () => {
+    const input = `Before\n| Name | Age |\n|------|-----|\n| Alice | 30 |\n| Bob | 25 |\nAfter`;
+    const output = stripMarkdown(input);
+    expect(output).toContain("Before");
+    expect(output).toContain("After");
+    expect(output).not.toContain("Alice");
+    expect(output).not.toContain("Bob");
+    expect(output).not.toContain("|");
+  });
+
+  it("should remove HTML tags", () => {
+    const input = "Click <strong>here</strong> to <em>continue</em>";
+    const output = stripMarkdown(input);
+    expect(output).toBe("Click here to continue");
   });
 });
 
