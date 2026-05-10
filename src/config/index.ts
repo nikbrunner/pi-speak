@@ -46,10 +46,18 @@ export function loadConfig(defaultConfig: SpeakConfig): { config: SpeakConfig; e
     return { config: { ...defaultConfig }, error: result.error };
   }
 
-  debug(
-    `loadConfig: voiceId=${result.data.readback.voiceId} bitrate=${result.data.readback.bitrate} ` +
-      `speed=${result.data.readback.speed} pitch=${result.data.readback.pitch} shortcut=${result.data.shortcut}`
-  );
+  const rcfg = result.data.readback;
+  if (rcfg.provider === "unreal") {
+    debug(
+      `loadConfig: provider=unreal voiceId=${rcfg.voiceId} bitrate=${rcfg.bitrate} ` +
+        `speed=${rcfg.speed} pitch=${rcfg.pitch} shortcut=${result.data.shortcut}`
+    );
+  } else {
+    debug(
+      `loadConfig: provider=openai voice=${rcfg.voice} model=${rcfg.model} ` +
+        `speed=${rcfg.speed} shortcut=${result.data.shortcut}`
+    );
+  }
 
   return { config: result.data, error: null };
 }

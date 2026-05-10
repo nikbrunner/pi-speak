@@ -19,7 +19,10 @@ import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { getProjectName, stripMarkdown } from "./helpers";
 import { createPlatform, isMacMuted, isPlatformSupported } from "./platform";
 import { summarizeForPing } from "./summarizer";
-import { TTSPlayer } from "./tts";
+import { TTSPlayer } from "./tts/player";
+import type { TTSProvider } from "./tts/provider";
+import { OpenAITTSProvider } from "./tts/providers/openai";
+import { UnrealSpeechProvider } from "./tts/providers/unreal";
 
 export interface UI {
   setWidget(key: string, content: string[] | undefined): void;
@@ -36,7 +39,11 @@ export default function (pi: ExtensionAPI) {
   const platformNotSupported = !isPlatformSupported();
 
   const platform = createPlatform();
-  const player = new TTSPlayer(platform, config);
+  const provider =
+    config.readback.provider === "openai"
+      ? (new OpenAITTSProvider(config.readback) as TTSProvider)
+      : (new UnrealSpeechProvider(config.readback) as TTSProvider);
+  const player = new TTSPlayer(platform, provider, config.shortcut);
 
   // ── State ──────────────────────────────────────────────────────────────────
 
@@ -111,15 +118,15 @@ export default function (pi: ExtensionAPI) {
     // Capture project name for voice ping (derived from cwd)
     projectName = getProjectName();
 
-    // Check for required API key (should be set in user's environment)
-    const apiKey = process.env.UNREAL_SPEECH_API_KEY ?? config.api.unrealSpeechKey;
-    if (!apiKey) {
+    // Initialize the TTS provider (validates API key, connectivity)
+    try {
+      await provider.initialize();
+      debug("session_start: provider initialized successfully");
+    } catch (err: unknown) {
       disabled = true;
-      debug("session_start: NO API KEY — extension disabled");
-      ctx.ui.notify(
-        "speak: UNREAL_SPEECH_API_KEY not set — voice readback disabled. Set it in your environment (e.g., source ~/.env)",
-        "warning"
-      );
+      const message = err instanceof Error ? err.message : String(err);
+      debug(`session_start: provider init FAILED — ${message}`);
+      ctx.ui.notify(`speak: ${message} — voice readback disabled`, "warning");
       ctx.ui.setWidget("speak", undefined);
       return;
     }
@@ -189,7 +196,7 @@ export default function (pi: ExtensionAPI) {
     debug(`agent_end: voice ping = "${ping}"`);
 
     // Speak the ping (short, not cached — alt+r replays the full response)
-    player.ping(ping);
+    player.ping(ping, ctx.ui);
   });
 
   // ── Shortcut: replay / stop ─────────────────────────────────────────────

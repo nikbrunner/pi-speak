@@ -1,97 +1,36 @@
 /**
- * Unreal Speech TTS client for pi-speak extension.
+ * Stateful TTS playback manager for pi-speak extension.
  *
- * Uses the V8 /stream endpoint for low-latency MP3 generation.
- * Responses are cached to disk for instant replay.
+ * Delegates voice synthesis to a pluggable TTSProvider (Unreal Speech, OpenAI, etc).
+ * Caches audio files to disk for instant alt+r replay.
+ *
+ * Note: speak() is not re-entrant — callers should await speak() before calling again.
+ * Concurrent calls will cause race conditions on cachedAudioFiles.
  */
 
 import { type ChildProcess } from "node:child_process";
 import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { SpeakConfig } from "./config/v1/schema";
-import { debug } from "./debug";
-import { chunkBySentences } from "./helpers";
-import type { UI } from "./index";
-import type { Platform } from "./platform";
+import { debug, debugError } from "../debug";
+import { chunkBySentences } from "../helpers";
+import type { BaseTTSConfig, TTSProvider } from "./provider";
 
 const TEMP_FILE_PREFIX = "pi-speak-";
 
-/** Readback configuration — the voice/audio subset of SpeakConfig */
-export interface ReadbackConfig {
-  voiceId: string;
-  bitrate: string;
-  speed: number;
-  pitch: number;
-}
-
-const DEFAULT_READBACK_CONFIG: ReadbackConfig = {
-  voiceId: "Sierra",
-  bitrate: "192k",
-  speed: -0.1,
-  pitch: 0.98
-};
-
-/** Default max chunk size */
-const DEFAULT_MAX_CHUNK_CHARS = 900;
-
-/** Fetch MP3 audio from Unreal Speech /stream endpoint */
-async function fetchTTS(text: string, config: ReadbackConfig): Promise<Buffer> {
-  const apiKey = process.env.UNREAL_SPEECH_API_KEY;
-  if (!apiKey) throw new Error("UNREAL_SPEECH_API_KEY not set");
-
-  const response = await fetch("https://api.v8.unrealspeech.com/stream", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      Text: text,
-      VoiceId: config.voiceId,
-      Bitrate: config.bitrate,
-      Speed: config.speed,
-      Pitch: config.pitch
-    }),
-    signal: AbortSignal.timeout(10_000)
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Unreal Speech API error ${response.status}: ${body}`);
-  }
-
-  const arrayBuf = await response.arrayBuffer();
-  return Buffer.from(arrayBuf);
-}
-
-/**
- * Stateful TTS playback manager with caching and generation-based cancellation.
- *
- * Note: speak() is not re-entrant — callers should await speak() before calling again.
- * Concurrent calls will cause race conditions on cachedAudioFiles.
- */
-export class TTSPlayer {
+export class TTSPlayer<TConfig extends BaseTTSConfig = BaseTTSConfig> {
   private cachedAudioFiles: string[] = [];
   private currentPlayback: ChildProcess | null = null;
   private isPlaying = false;
   private playGeneration = 0;
-  private config: ReadbackConfig;
-  private maxChunkChars: number;
   private shortcutLabel: string;
 
   constructor(
-    private platform: Platform,
-    config?: SpeakConfig
+    private platform: { playAudio: (file: string, onProc: (proc: ChildProcess) => void) => Promise<void> },
+    private provider: TTSProvider<TConfig>,
+    shortcut?: string
   ) {
-    this.config = {
-      voiceId: config?.readback.voiceId ?? DEFAULT_READBACK_CONFIG.voiceId,
-      bitrate: config?.readback.bitrate ?? DEFAULT_READBACK_CONFIG.bitrate,
-      speed: config?.readback.speed ?? DEFAULT_READBACK_CONFIG.speed,
-      pitch: config?.readback.pitch ?? DEFAULT_READBACK_CONFIG.pitch
-    };
-    this.maxChunkChars = config?.readback.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS;
-    this.shortcutLabel = config?.shortcut ?? "alt+r";
+    this.shortcutLabel = shortcut ?? "alt+r";
   }
 
   get playing(): boolean {
@@ -117,15 +56,21 @@ export class TTSPlayer {
   }
 
   /** Speak a short ping notification (not cached — does not affect alt+r replay). */
-  async ping(text: string): Promise<void> {
+  async ping(
+    text: string,
+    ui?: {
+      setWidget: (k: string, c: string[] | undefined) => void;
+      notify: (m: string, t: "info" | "warning" | "error") => void;
+    }
+  ): Promise<void> {
     if (!text) return;
 
     debug(`ping: speaking "${text.slice(0, 80)}"`);
 
     try {
-      const mp3Data = await fetchTTS(text, this.config);
+      const { audio } = await this.provider.synthesize(text);
       const tmpFile = join(tmpdir(), `${TEMP_FILE_PREFIX}ping-${Date.now()}.mp3`);
-      writeFileSync(tmpFile, mp3Data);
+      writeFileSync(tmpFile, audio);
 
       await this.platform.playAudio(tmpFile, proc => {
         this.currentPlayback = proc;
@@ -138,20 +83,30 @@ export class TTSPlayer {
         /* ignore */
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      debug(`ping: ERROR: ${message}`);
+      debugError("ping: failed", err);
+      if (ui) {
+        const message = err instanceof Error ? err.message : String(err);
+        ui.notify(`speak: TTS error — ${message}`, "error");
+      }
     }
   }
 
   /** Speak text aloud. Uses cached files if available, fetches otherwise. */
-  async speak(text: string, ui: UI): Promise<void> {
+  async speak(
+    text: string,
+    ui: {
+      setWidget: (k: string, c: string[] | undefined) => void;
+      notify: (m: string, t: "info" | "warning" | "error") => void;
+    }
+  ): Promise<void> {
     if (!text) return;
 
     const myGeneration = ++this.playGeneration;
     this.isPlaying = true;
     this.updateWidget(ui);
 
-    const chunks = chunkBySentences(text, this.maxChunkChars);
+    const maxChunkChars = this.provider.config.maxChunkChars;
+    const chunks = chunkBySentences(text, maxChunkChars);
     const newFiles: string[] = [];
     debug(`speak: gen=${myGeneration} chunks=${chunks.length} cachedFiles=${this.cachedAudioFiles.length}`);
 
@@ -169,18 +124,18 @@ export class TTSPlayer {
           playFile = existingFile;
           debug(`speak: gen=${myGeneration} chunk ${i}: CACHE HIT → ${playFile}`);
         } else {
-          debug(`speak: gen=${myGeneration} chunk ${i}: FETCHING from Unreal Speech...`);
+          debug(`speak: gen=${myGeneration} chunk ${i}: FETCHING from provider...`);
           const chunk = chunks[i];
           if (chunk === undefined) break;
-          const mp3Data = await fetchTTS(chunk, this.config);
+          const { audio } = await this.provider.synthesize(chunk);
 
           if (this.playGeneration !== myGeneration) {
             debug(`speak: gen=${myGeneration} aborted after fetch at chunk ${i}`);
             break;
           }
           playFile = join(tmpdir(), `${TEMP_FILE_PREFIX}${Date.now()}-${i}.mp3`);
-          writeFileSync(playFile, mp3Data);
-          debug(`speak: gen=${myGeneration} chunk ${i}: FETCHED → ${playFile} (${mp3Data.length} bytes)`);
+          writeFileSync(playFile, audio);
+          debug(`speak: gen=${myGeneration} chunk ${i}: FETCHED → ${playFile} (${audio.length} bytes)`);
         }
 
         newFiles.push(playFile);
@@ -193,8 +148,8 @@ export class TTSPlayer {
       }
     } catch (err: unknown) {
       if (this.playGeneration === myGeneration) {
+        debugError(`speak: gen=${myGeneration} ERROR`, err);
         const message = err instanceof Error ? err.message : String(err);
-        debug(`speak: gen=${myGeneration} ERROR: ${message}`);
         ui.notify(`speak: TTS error — ${message}`, "error");
       }
     } finally {
@@ -237,7 +192,6 @@ export class TTSPlayer {
     this.isPlaying = false;
     if (this.currentPlayback) {
       this.currentPlayback.kill("SIGTERM");
-      // Fallback to SIGKILL if process doesn't stop within 500ms
       const proc = this.currentPlayback;
       setTimeout(() => {
         if (!proc.killed) {
@@ -250,7 +204,7 @@ export class TTSPlayer {
   }
 
   /** Update the status widget */
-  private updateWidget(ui: Pick<UI, "setWidget">, disabled = false): void {
+  private updateWidget(ui: { setWidget: (k: string, c: string[] | undefined) => void }, disabled = false): void {
     if (disabled) {
       ui.setWidget("speak", undefined);
       return;

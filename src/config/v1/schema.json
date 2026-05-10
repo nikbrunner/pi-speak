@@ -19,91 +19,176 @@
       "description": "Keyboard shortcut for replay/stop"
     },
     "readback": {
-      "default": {},
-      "type": "object",
-      "properties": {
-        "voiceId": {
-          "default": "Sierra",
-          "type": "string",
-          "enum": [
-            "Autumn",
-            "Melody",
-            "Hannah",
-            "Emily",
-            "Ivy",
-            "Kaitlyn",
-            "Luna",
-            "Willow",
-            "Lauren",
-            "Sierra",
-            "Noah",
-            "Jasper",
-            "Caleb",
-            "Ronan",
-            "Ethan",
-            "Daniel",
-            "Zane",
-            "Mei",
-            "Lian",
-            "Ting",
-            "Jing",
-            "Wei",
-            "Jian",
-            "Hao",
-            "Sheng",
-            "Lucía",
-            "Mateo",
-            "Javier",
-            "Élodie",
-            "Ananya",
-            "Priya",
-            "Arjun",
-            "Rohan",
-            "Giulia",
-            "Luca",
-            "Camila",
-            "Thiago",
-            "Rafael"
-          ],
-          "description": "Unreal Speech voice name"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "const": "unreal"
+            },
+            "voiceId": {
+              "default": "Sierra",
+              "type": "string",
+              "enum": [
+                "Autumn",
+                "Melody",
+                "Hannah",
+                "Emily",
+                "Ivy",
+                "Kaitlyn",
+                "Luna",
+                "Willow",
+                "Lauren",
+                "Sierra",
+                "Noah",
+                "Jasper",
+                "Caleb",
+                "Ronan",
+                "Ethan",
+                "Daniel",
+                "Zane",
+                "Mei",
+                "Lian",
+                "Ting",
+                "Jing",
+                "Wei",
+                "Jian",
+                "Hao",
+                "Sheng",
+                "Lucía",
+                "Mateo",
+                "Javier",
+                "Élodie",
+                "Ananya",
+                "Priya",
+                "Arjun",
+                "Rohan",
+                "Giulia",
+                "Luca",
+                "Camila",
+                "Thiago",
+                "Rafael"
+              ],
+              "description": "Unreal Speech voice name"
+            },
+            "bitrate": {
+              "default": "192k",
+              "type": "string",
+              "enum": [
+                "16k",
+                "32k",
+                "48k",
+                "64k",
+                "128k",
+                "192k",
+                "256k",
+                "320k"
+              ],
+              "description": "Audio bitrate — lower saves bandwidth, higher improves fidelity"
+            },
+            "speed": {
+              "default": -0.1,
+              "type": "number",
+              "minimum": -1,
+              "maximum": 1,
+              "description": "Speech speed adjustment (-1 to 1, -0.1 = 10% slower)"
+            },
+            "pitch": {
+              "default": 0.98,
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5,
+              "description": "Speech pitch adjustment (0.5 to 1.5)"
+            },
+            "maxChunkChars": {
+              "default": 900,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "description": "Max characters per TTS chunk (Unreal Speech limit is 1000)"
+            }
+          },
+          "required": [
+            "provider"
+          ]
         },
-        "bitrate": {
-          "default": "192k",
-          "type": "string",
-          "enum": [
-            "16k",
-            "32k",
-            "48k",
-            "64k",
-            "128k",
-            "192k",
-            "256k",
-            "320k"
-          ],
-          "description": "Audio bitrate — lower saves bandwidth, higher improves fidelity"
-        },
-        "speed": {
-          "default": -0.1,
-          "type": "number",
-          "minimum": -1,
-          "maximum": 1,
-          "description": "Speech speed adjustment (-1 to 1)"
-        },
-        "pitch": {
-          "default": 0.98,
-          "type": "number",
-          "minimum": 0.5,
-          "maximum": 1.5,
-          "description": "Speech pitch adjustment (0.5 to 1.5)"
-        },
-        "maxChunkChars": {
-          "default": 900,
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1000,
-          "description": "Max characters per TTS chunk (Unreal Speech limit is 1000)"
+        {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "const": "openai"
+            },
+            "voice": {
+              "default": "nova",
+              "type": "string",
+              "enum": [
+                "alloy",
+                "ash",
+                "ballad",
+                "coral",
+                "echo",
+                "fable",
+                "onyx",
+                "nova",
+                "sage",
+                "shimmer",
+                "verse",
+                "marin",
+                "cedar"
+              ],
+              "description": "OpenAI TTS voice name"
+            },
+            "model": {
+              "default": "gpt-4o-mini-tts",
+              "type": "string",
+              "description": "OpenAI TTS model ID"
+            },
+            "instructions": {
+              "default": "\n      Personality/affect: a high-energy cheerleader helping with administrative tasks\n\n      Voice: Enthusiastic, and bubbly, with an uplifting and motivational quality.\n\n      Tone: Encouraging and playful, making even simple tasks feel exciting and fun.\n      ",
+              "type": "string",
+              "description": "Natural language instructions for voice personality, tone, emotion, pacing"
+            },
+            "speed": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0.25,
+              "maximum": 4,
+              "description": "Speech speed (0.25 to 4.0, 1.0 = normal)"
+            },
+            "format": {
+              "default": "mp3",
+              "type": "string",
+              "enum": [
+                "mp3",
+                "opus",
+                "aac",
+                "flac",
+                "wav",
+                "pcm"
+              ],
+              "description": "Audio output format"
+            },
+            "baseUrl": {
+              "default": "https://api.openai.com/v1",
+              "type": "string",
+              "format": "uri",
+              "description": "Base URL for the TTS API (supports OpenRouter: https://openrouter.ai/api/v1)"
+            },
+            "maxChunkChars": {
+              "default": 1000,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4096,
+              "description": "Max characters per TTS chunk"
+            }
+          },
+          "required": [
+            "provider"
+          ]
         }
-      }
+      ]
     },
     "summarizer": {
       "default": {},
@@ -134,7 +219,7 @@
           "description": "Summarizer request timeout in milliseconds"
         },
         "prompt": {
-          "default": "You just watched a developer and their AI agent work together. Say what they built, fixed, or changed — in one natural sentence, like you're leaning over to tell a teammate. Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project').",
+          "default": "You are the AI agent that just helped a developer. In one natural sentence, say what you built, fixed, or changed — as if you're leaning over to tell them yourself. First person ('I'). Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project').",
           "type": "string",
           "description": "System prompt for the summarizer LLM"
         },
@@ -198,5 +283,8 @@
         }
       }
     }
-  }
+  },
+  "required": [
+    "readback"
+  ]
 }

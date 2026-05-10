@@ -66,10 +66,56 @@ const Bitrate = z.enum(["16k", "32k", "48k", "64k", "128k", "192k", "256k", "320
 
 // ─── Sub-schemas ─────────────────────────────────────────────────────────────
 
-export const ReadbackConfigSchema = z.object({
+// ─── Provider sub-schemas ───────────────────────────────────────────────────
+
+const OpenAIReadbackSchema = z.object({
+  provider: z.literal("openai"),
+  voice: z
+    .enum([
+      "alloy",
+      "ash",
+      "ballad",
+      "coral",
+      "echo",
+      "fable",
+      "onyx",
+      "nova",
+      "sage",
+      "shimmer",
+      "verse",
+      "marin",
+      "cedar"
+    ])
+    .describe("OpenAI TTS voice name")
+    .default("nova"),
+  model: z.string().describe("OpenAI TTS model ID").default("gpt-4o-mini-tts"),
+  instructions: z
+    .string()
+    .describe("Natural language instructions for voice personality, tone, emotion, pacing")
+    .default(
+      `
+      Personality/affect: a high-energy cheerleader helping with administrative tasks
+
+      Voice: Enthusiastic, and bubbly, with an uplifting and motivational quality.
+
+      Tone: Encouraging and playful, making even simple tasks feel exciting and fun.
+      `
+    ),
+  speed: z.number().min(0.25).max(4).describe("Speech speed (0.25 to 4.0, 1.0 = normal)").default(1),
+  format: z.enum(["mp3", "opus", "aac", "flac", "wav", "pcm"]).describe("Audio output format").default("mp3"),
+  baseUrl: z
+    .string()
+    .url()
+    .describe("Base URL for the TTS API (supports OpenRouter: https://openrouter.ai/api/v1)")
+    .default("https://api.openai.com/v1"),
+  maxChunkChars: z.number().int().min(1).max(4096).describe("Max characters per TTS chunk").default(1000)
+});
+
+const UnrealReadbackSchema = z.object({
+  provider: z.literal("unreal"),
   voiceId: VoiceId.describe("Unreal Speech voice name").default("Sierra"),
   bitrate: Bitrate.describe("Audio bitrate — lower saves bandwidth, higher improves fidelity").default("192k"),
-  speed: z.number().min(-1).max(1).describe("Speech speed adjustment (-1 to 1)").default(-0.1),
+  speed: z.number().min(-1).max(1).describe("Speech speed adjustment (-1 to 1, -0.1 = 10% slower)").default(-0.1),
   pitch: z.number().min(0.5).max(1.5).describe("Speech pitch adjustment (0.5 to 1.5)").default(0.98),
   maxChunkChars: z
     .number()
@@ -80,6 +126,8 @@ export const ReadbackConfigSchema = z.object({
     .default(900)
 });
 
+export const ReadbackConfigSchema = z.discriminatedUnion("provider", [UnrealReadbackSchema, OpenAIReadbackSchema]);
+
 export const SummarizerConfigSchema = z.object({
   enabled: z.boolean().describe("Use LLM to summarize agent output for voice notification").default(true),
   model: z.string().describe("OpenRouter model ID for summarization").default("google/gemini-2.5-flash-lite"),
@@ -89,7 +137,7 @@ export const SummarizerConfigSchema = z.object({
     .string()
     .describe("System prompt for the summarizer LLM")
     .default(
-      "You just watched a developer and their AI agent work together. Say what they built, fixed, or changed — in one natural sentence, like you're leaning over to tell a teammate. Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project')."
+      "You are the AI agent that just helped a developer. In one natural sentence, say what you built, fixed, or changed — as if you're leaning over to tell them yourself. First person ('I'). Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project')."
     ),
   fallbackText: z
     .string()
@@ -120,12 +168,21 @@ export const SpeakConfigSchema = z.object({
   $schema: z.url().default(SCHEMA_URL),
   version: z.number().int().min(0).default(1),
   shortcut: z.string().describe("Keyboard shortcut for replay/stop").default("alt+r"),
-  readback: ReadbackConfigSchema.prefault({}),
+  readback: ReadbackConfigSchema,
   summarizer: SummarizerConfigSchema.prefault({}),
   debug: DebugConfigSchema.prefault({}),
   api: ApiConfigSchema.prefault({})
 });
 
-export const defaultConfig = SpeakConfigSchema.parse({});
+const DEFAULT_READBACK = OpenAIReadbackSchema.parse({ provider: "openai" });
+
+export const defaultConfig = SpeakConfigSchema.parse({
+  readback: DEFAULT_READBACK,
+  summarizer: {},
+  debug: {},
+  api: {}
+});
+
+export { UnrealReadbackSchema, OpenAIReadbackSchema };
 
 export type SpeakConfig = z.infer<typeof SpeakConfigSchema>;
