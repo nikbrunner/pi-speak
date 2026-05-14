@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.0](https://github.com/nikbrunner/pi-speak/compare/pi-speak-v0.2.0...pi-speak-v0.3.0) (2026-05-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove session greeting feature
+
+### Features
+
+* **command:** add /speak toggle with persistent config ([a4b9b4e](https://github.com/nikbrunner/pi-speak/commit/a4b9b4e121ab36fad93ef9383e2bae0873688608))
+* **helpers:** add getProjectName from cwd with human-readable formatting ([3cc24d8](https://github.com/nikbrunner/pi-speak/commit/3cc24d871f1ff1b74a1391d9e38b5f5574f05bc9))
+* **readback:** slow default speed by 10% (-0.1), lower pitch (0.98), remove unsupported temperature ([300d0f0](https://github.com/nikbrunner/pi-speak/commit/300d0f0c57399ab3f3af387df264dcab001d8f4a))
+* remove session greeting feature ([b3b1977](https://github.com/nikbrunner/pi-speak/commit/b3b1977eec73cc45e341e11e4d87bdc47d964763))
+* **tts:** add OpenAI TTS provider with init validation and error surfacing ([4ed9a32](https://github.com/nikbrunner/pi-speak/commit/4ed9a3269665d7fba76e0b884431d05e8d1aaffa))
+
+
+### Refactors
+
+* **ping:** replace tmux session name with cwd-derived project name ([6a99017](https://github.com/nikbrunner/pi-speak/commit/6a9901726475b9a51bac12c9d2c6bf7a97a1a239))
+* update default prompts to professional tone ([5718704](https://github.com/nikbrunner/pi-speak/commit/5718704df09cb72aec59931bb3878dedda810551))
+
 ## [0.2.0](https://github.com/nikbrunner/pi-speak/compare/pi-speak-v0.1.0...pi-speak-v0.2.0) (2026-04-12)
 
 
