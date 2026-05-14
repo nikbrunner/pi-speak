@@ -119,20 +119,20 @@ export default function (pi: ExtensionAPI) {
     projectName = getProjectName();
 
     // Initialize the TTS provider (validates API key, connectivity)
-    try {
-      await provider.initialize();
-      debug("session_start: provider initialized successfully");
-    } catch (err: unknown) {
-      disabled = true;
-      const message = err instanceof Error ? err.message : String(err);
-      debug(`session_start: provider init FAILED — ${message}`);
-      ctx.ui.notify(`speak: ${message} — voice readback disabled`, "warning");
-      ctx.ui.setWidget("speak", undefined);
-      return;
-    }
-
-    // Clear stale audio cache from previous sessions
-    player.clearCache();
+    // Fire-and-forget: start enabled, disable async if init fails
+    provider.initialize().then(
+      () => {
+        debug("session_start: provider initialized successfully");
+        player.clearCache();
+      },
+      (err: unknown) => {
+        disabled = true;
+        const message = err instanceof Error ? err.message : String(err);
+        debug(`session_start: provider init FAILED — ${message}`);
+        ctx.ui.notify(`speak: ${message} — voice readback disabled`, "warning");
+        ctx.ui.setWidget("speak", undefined);
+      }
+    );
 
     debug("session_start: API key loaded, extension enabled");
     ctx.ui.setWidget("speak", buildWidgetContent("🔊 " + config.shortcut + " read aloud"));

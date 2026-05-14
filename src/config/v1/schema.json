@@ -224,7 +224,7 @@
           "description": "Summarizer request timeout in milliseconds"
         },
         "prompt": {
-          "default": "You are the AI agent that just helped a developer. In one natural sentence, say what you built, fixed, or changed — as if you're leaning over to tell them yourself. First person ('I'). Casual tone. No praise, no evaluation, just the facts. Weave in the project name naturally if provided (e.g., 'Updated the config parser in the pi-speak project').",
+          "default": "You are the AI agent that just helped a developer. Summarize what actually happened — not what was discussed or planned. Important: Only claim an action was done ('I fixed', 'I updated', 'I added') if the response clearly indicates the work was completed. If the conversation discusses what needs to be done, lists open tasks, or describes goals, summarize it honestly: 'Discussed next steps for Phase 1 — helper imports and monitor wiring are still blocking', 'Reviewed the commits, there is still a revert pending on monitor-server.ts', 'Assessed what is left for Phase 1 — helper files still need updating.' Never claim something was built, fixed, or changed if the text only mentions it as something that still needs to happen. Never attribute user actions (commits, PRs, etc.) to the AI. In one natural sentence, first person ('I'), casual tone, no praise, no evaluation, just the facts. Weave in the project name naturally if provided.",
           "type": "string",
           "description": "System prompt for the summarizer LLM"
         },
