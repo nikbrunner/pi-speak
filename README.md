@@ -50,6 +50,7 @@ All available options with descriptions and defaults are defined in the schema:
 
 - **Notification**: When the agent finishes, a notification appears with the session name and summary. Navigate to the session yourself, then press `alt+r` to hear the response.
 - **`alt+r`**: Press to replay the last response. Press again during playback to stop.
+- **`/speak`**: Toggle voice readback on/off. Stops any active playback when disabling.
 
 ## Debugging
 

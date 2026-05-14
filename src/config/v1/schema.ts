@@ -167,6 +167,7 @@ export const ApiConfigSchema = z.object({
 export const SpeakConfigSchema = z.object({
   $schema: z.url().default(SCHEMA_URL),
   version: z.number().int().min(0).default(1),
+  enabled: z.boolean().describe("Enable or disable voice readback globally").default(true),
   shortcut: z.string().describe("Keyboard shortcut for replay/stop").default("alt+r"),
   readback: ReadbackConfigSchema,
   summarizer: SummarizerConfigSchema.prefault({}),

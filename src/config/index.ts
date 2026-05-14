@@ -1,6 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { z } from "zod";
-import { debug } from "../debug";
+import { debug, debugError } from "../debug";
 import { CONFIG_PATH, SpeakConfigSchema, type SpeakConfig } from "./v1/schema";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -63,6 +64,16 @@ export function loadConfig(defaultConfig: SpeakConfig): { config: SpeakConfig; e
 }
 
 // ─── Revalidate ─────────────────────────────────────────────────────────────
+
+export function writeConfig(config: SpeakConfig): void {
+  try {
+    mkdirSync(dirname(CONFIG_PATH), { recursive: true });
+    writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n", "utf-8");
+    debug(`writeConfig: saved to ${CONFIG_PATH}`);
+  } catch (err: unknown) {
+    debugError("writeConfig: failed", err);
+  }
+}
 
 export function revalidateConfig(): z.ZodError | Error | null {
   if (!existsSync(CONFIG_PATH)) return null;

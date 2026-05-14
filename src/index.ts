@@ -13,7 +13,7 @@
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { z } from "zod";
-import { loadConfig, revalidateConfig } from "./config/index";
+import { loadConfig, revalidateConfig, writeConfig } from "./config/index";
 import { defaultConfig } from "./config/v1/schema";
 import { configureDebug, debug, debugError, setDebugEnabled } from "./debug";
 import { getProjectName, stripMarkdown } from "./helpers";
@@ -49,7 +49,7 @@ export default function (pi: ExtensionAPI) {
 
   let configError: z.ZodError | Error | null = initialError;
   let lastResponseText = "";
-  let disabled = false;
+  let disabled = !config.enabled;
   let projectName = "";
   let wasMutedOnLastResponse = false;
 
@@ -197,6 +197,32 @@ export default function (pi: ExtensionAPI) {
 
     // Speak the ping (short, not cached — alt+r replays the full response)
     player.ping(ping, ctx.ui);
+  });
+
+  // ── Command: /speak toggle ────────────────────────────────────────────
+
+  pi.registerCommand("speak", {
+    description: "Toggle pi-speak on/off",
+    handler: async (_args, ctx) => {
+      disabled = !disabled;
+
+      // Stop playback if currently playing when disabled
+      if (disabled && player.playing) {
+        player.stop();
+      }
+
+      // Persist to config
+      writeConfig({ ...config, enabled: !disabled });
+
+      const state = disabled ? "disabled" : "enabled";
+      ctx.ui.notify(`speak: voice readback ${state}`, "info");
+
+      if (disabled) {
+        ctx.ui.setWidget("speak", buildWidgetContent("🔇 Disabled  /speak to enable"));
+      } else {
+        ctx.ui.setWidget("speak", buildWidgetContent("🔊 " + config.shortcut + " read aloud"));
+      }
+    }
   });
 
   // ── Shortcut: replay / stop ─────────────────────────────────────────────
